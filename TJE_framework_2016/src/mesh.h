@@ -14,6 +14,7 @@ class Mesh
 {
 public:
 	std::vector< Vector3 > vertices; //here we store the vertices
+	std::vector< Vector3 > unique_vertices; //here we store the index of vertices
 	std::vector< Vector3 > normals;	 //here we store the normals
 	std::vector< Vector2 > uvs;	 //here we store the texture coordinates
 	std::vector< Vector4 > colors;	 //here we store colors by vertex

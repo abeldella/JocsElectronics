@@ -31,6 +31,7 @@ Mesh::~Mesh()
 void Mesh::clear()
 {
 	vertices.clear();
+	unique_vertices.clear();
 	normals.clear();
 	uvs.clear();
 	colors.clear();
@@ -292,23 +293,68 @@ bool Mesh::loadASE(const char* filename) {
 		exit(0);
 	}
 	t.seek("*MESH_NUMVERTEX");
-	int num_vertices = t.getint();
-	std::cout << "num vertices: " << num_vertices << std::endl;
-	vertices.resize(num_vertices);
+	int num_vertex = t.getint();
+	std::cout << "num vertex: " << num_vertex << std::endl;
 	t.seek("*MESH_NUMFACES");
 	int num_faces = t.getint();
 	std::cout << "num faces: " << num_faces << std::endl;
 
-	for (int i = 0; i < num_vertices; i++) {
+	unique_vertices.resize(num_vertex);
+	vertices.resize(num_faces);
+
+	for (int i = 0; i < num_vertex; i++) {
 		t.seek("*MESH_VERTEX");
 		t.getint();
-		Vector3 v;
-		v.x = t.getfloat();
-		v.z = t.getfloat();
-		v.y = t.getfloat();
-		vertices[i] = v;
+		unique_vertices[i] = Vector3(t.getfloat(), t.getfloat(), t.getfloat());
 	}
-	//t.seek("*MESH_FACE_LIST");
 	
+	t.seek("*MESH_FACE_LIST");
+	for (int i = 0; i < num_faces; i++) {
+		t.seek("*MESH_FACE");
+		t.getword();
+		t.getword();
+
+		vertices.push_back(unique_vertices[t.getint()]);
+		t.getword();
+		vertices.push_back(unique_vertices[t.getint()]);
+		t.getword();
+		vertices.push_back(unique_vertices[t.getint()]);
+	}
+
+
+	t.seek("*MESH_NUMTVERTEX");
+	int num_textures = t.getint();
+	std::cout << "num textures: " << num_textures << std::endl;
+	uvs.resize(num_textures);
+
+	for (int i = 0; i < num_textures; i++) {
+		t.seek("*MESH_TVERT");
+		t.getint();
+		Vector2 v;
+		v.x = t.getfloat();
+		v.y = t.getfloat();
+		uvs.push_back(v);
+		//Checkup
+		//std::cout << "uvs " << i << " " << v.x << " " << v.y << std::endl;
+	}
+
+
+	t.seek("*MESH_NORMALS");
+	normals.resize(num_faces*3);
+
+	for (int i = 0; i < num_faces; i++) {
+		for (int j = 0; j < 3; j++) {
+			t.seek("*MESH_VERTEXNORMAL");
+			t.getint();
+			Vector3 v;
+			v.x = t.getfloat();
+			v.y = t.getfloat();
+			v.z = t.getfloat();
+			normals.push_back(v);
+			//Checkup
+			//std::cout << "normals " << i << " " << v.x << " " << v.y << " " << v.z << std::endl;
+		}
+
+	}
 	return true;
 }
