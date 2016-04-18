@@ -51,12 +51,18 @@ void Game::init(void)
 	mesh = new Mesh();
 	//mesh->createPlane(10);
 	long t1 = getTime();
-	if (mesh->loadASE("data/meshes/box.ASE") == false) {
+	if (mesh->loadASE("data/meshes/spitfire.ASE") == false) {
 		std::cout << "Mesh can not be loaded" << std::endl;
 		exit(0);
 	}
-	long t2 = getTime();
 
+	texture = new Texture();
+	if (texture->load("data/textures/spitfire_color_spec.TGA") == false) {
+		std::cout << "Texture can not be loaded" << std::endl;
+		exit(0);
+	}
+	long t2 = getTime();
+	std::cout << "Mesh load time : " << ((t2-t1)*0.001) << "s" << std::endl;
 
 	shader = new Shader();
 	if( !shader->load("data/shaders/simple.vs","data/shaders/simple.fs") )
@@ -93,7 +99,7 @@ void Game::render(void)
 	m.rotate(angle * DEG2RAD, Vector3(0,1,0) ); //build a rotation matrix
 
 	//draw the plane
-	if(1) //render using shader
+	if(0) //render using shader
 	{
 	    Matrix44 mvp = m * camera->viewprojection_matrix;
 
@@ -108,7 +114,9 @@ void Game::render(void)
 	{
 		glPushMatrix();
 		m.multGL();
+		texture->bind();
 		mesh->render(GL_TRIANGLES);
+		texture->unbind();
 		glPopMatrix();
 	}
     

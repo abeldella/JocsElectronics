@@ -292,6 +292,7 @@ bool Mesh::loadASE(const char* filename) {
 		std::cout << "TextParser::create() fail" << std::endl;
 		exit(0);
 	}
+
 	t.seek("*MESH_NUMVERTEX");
 	int num_vertex = t.getint();
 	std::cout << "num vertex: " << num_vertex << std::endl;
@@ -300,47 +301,74 @@ bool Mesh::loadASE(const char* filename) {
 	std::cout << "num faces: " << num_faces << std::endl;
 
 	unique_vertices.resize(num_vertex);
-	vertices.resize(num_faces);
 
 	for (int i = 0; i < num_vertex; i++) {
 		t.seek("*MESH_VERTEX");
 		t.getint();
-		unique_vertices[i] = Vector3(t.getfloat(), t.getfloat(), t.getfloat());
+		Vector3 v;
+		v.x = t.getfloat();
+		v.z = t.getfloat();
+		v.y = t.getfloat();
+		unique_vertices[i] = v;
 	}
 	
 	t.seek("*MESH_FACE_LIST");
+	//vertices.resize(num_faces);
+
 	for (int i = 0; i < num_faces; i++) {
 		t.seek("*MESH_FACE");
 		t.getword();
 		t.getword();
 
-		vertices.push_back(unique_vertices[t.getint()]);
+		int A = t.getint();
 		t.getword();
-		vertices.push_back(unique_vertices[t.getint()]);
+		int B = t.getint();
 		t.getword();
-		vertices.push_back(unique_vertices[t.getint()]);
+		int C = t.getint();
+
+		vertices.push_back(unique_vertices[A]);
+		vertices.push_back(unique_vertices[C]);
+		vertices.push_back(unique_vertices[B]);
 	}
 
 
 	t.seek("*MESH_NUMTVERTEX");
-	int num_textures = t.getint();
-	std::cout << "num textures: " << num_textures << std::endl;
-	uvs.resize(num_textures);
-
-	for (int i = 0; i < num_textures; i++) {
+	int numtvertex = t.getint();
+	std::cout << "num TVERTEX: " << numtvertex << std::endl;
+	
+	unique_uvs.resize(numtvertex);
+	
+	for (int i = 0; i < numtvertex; i++) {
 		t.seek("*MESH_TVERT");
 		t.getint();
 		Vector2 v;
 		v.x = t.getfloat();
 		v.y = t.getfloat();
-		uvs.push_back(v);
+		unique_uvs[i] = v;
 		//Checkup
 		//std::cout << "uvs " << i << " " << v.x << " " << v.y << std::endl;
 	}
 
+	t.seek("*MESH_NUMTVFACES");
+	int num_vfaces = t.getint();
+	//uvs.resize(num_vfaces);
+
+	for (int i = 0; i < num_vfaces; i++) {
+		t.seek("*MESH_TFACE");
+		t.getint(); 
+		int A = t.getint();
+		int B = t.getint();
+		int C = t.getint();
+
+		uvs.push_back(unique_uvs[A]);
+		uvs.push_back(unique_uvs[C]);
+		uvs.push_back(unique_uvs[B]);
+		//Checkup
+		//std::cout << "uvs " << i << " " << v.x << " " << v.y << std::endl;
+	}
 
 	t.seek("*MESH_NORMALS");
-	normals.resize(num_faces*3);
+	//normals.resize(num_faces);
 
 	for (int i = 0; i < num_faces; i++) {
 		for (int j = 0; j < 3; j++) {
@@ -348,13 +376,24 @@ bool Mesh::loadASE(const char* filename) {
 			t.getint();
 			Vector3 v;
 			v.x = t.getfloat();
-			v.y = t.getfloat();
 			v.z = t.getfloat();
+			v.y = t.getfloat();
 			normals.push_back(v);
 			//Checkup
 			//std::cout << "normals " << i << " " << v.x << " " << v.y << " " << v.z << std::endl;
 		}
-
 	}
+
+	//checkup normals and uvs
+	/*
+	for (int i = 0; i < normals.size(); i++) {
+		colors.push_back(Vector4(normals[i].x, normals[i].y, normals[i].z, 0.0));
+	}
+
+	
+	for (int i = 0; i < uvs.size(); i++) {
+		colors.push_back(Vector4(uvs[i].x, uvs[i].y, 0.0, 0.0));
+	}
+	*/
 	return true;
 }
