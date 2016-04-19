@@ -325,7 +325,7 @@ bool Mesh::loadASE(const char* filename) {
 		t.getint();
 		Vector3 v;
 		v.x = t.getfloat();
-		v.z = t.getfloat();
+		v.z = t.getfloat() * (-1);
 		v.y = t.getfloat();
 		unique_vertices[i] = v;
 	}
@@ -348,8 +348,8 @@ bool Mesh::loadASE(const char* filename) {
 		//vertices.push_back(unique_vertices[C]);
 		//vertices.push_back(unique_vertices[B]);
 		vertices[i] = unique_vertices[A];
-		vertices[i+1] = unique_vertices[C];
-		vertices[i+2] = unique_vertices[B];
+		vertices[i+1] = unique_vertices[B];
+		vertices[i+2] = unique_vertices[C];
 	}
 
 
@@ -384,8 +384,8 @@ bool Mesh::loadASE(const char* filename) {
 		//uvs.push_back(unique_uvs[C]);
 		//uvs.push_back(unique_uvs[B]);
 		uvs[i] = unique_uvs[A];
-		uvs[i+1] = unique_uvs[C];
-		uvs[i+2] = unique_uvs[B];
+		uvs[i+1] = unique_uvs[B];
+		uvs[i+2] = unique_uvs[C];
 	}
 
 	//Almacenamos las normales de la mesh
@@ -397,7 +397,7 @@ bool Mesh::loadASE(const char* filename) {
 			t.getint();
 			Vector3 v;
 			v.x = t.getfloat();
-			v.z = t.getfloat();
+			v.z = t.getfloat() * (-1);
 			v.y = t.getfloat();
 			//normals.push_back(v);
 			normals[i] = v;
