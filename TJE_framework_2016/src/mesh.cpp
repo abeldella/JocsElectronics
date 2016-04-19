@@ -4,6 +4,13 @@
 #include "shader.h"
 #include "extra\textparser.h"
 
+struct sMeshbin {
+	char format[4];
+	int num_vertices;
+	int num_normals;
+	int num_uvs;
+};
+
 Mesh::Mesh()
 {
 	vertices_vbo_id = 0;
@@ -31,12 +38,10 @@ Mesh::~Mesh()
 void Mesh::clear()
 {
 	vertices.clear();
-	unique_vertices.clear();
 	normals.clear();
 	uvs.clear();
 	colors.clear();
 }
-
 
 void Mesh::render(int primitive)
 {
@@ -250,7 +255,6 @@ void Mesh::createQuad(float center_x, float center_y, float w, float h, bool fli
 	normals.push_back( Vector3(0.0f,0.0f,1.0f) );
 }
 
-
 void Mesh::createPlane(float size)
 {
 	vertices.clear();
@@ -285,23 +289,37 @@ void Mesh::createPlane(float size)
 }
 
 bool Mesh::loadASE(const char* filename) {
+	/* Al almacenar los vertices se hace en orden contra las agujas del reloj, 
+	 * por eso almacenamos en orden (A, C, B) o (x, z, y) */
+	
 	clear();
 	
+	//Comprobamos si existe el archivo binario de la mesh, y en ese caso lo cargamos
+	std::string bin_filename;
+	bin_filename = filename + std::string(".bin");
+
+	if(loadBIN(bin_filename.c_str())){
+		std::cout << "Existe BIN" << std::endl;
+		return true;
+	}
+
 	TextParser t;
+	//Cargamos un archivo ASE
 	if (!t.create(filename)) {
-		std::cout << "TextParser::create() fail" << std::endl;
+		std::cout << "File: mesh.cpp - TextParser::create() fail" << std::endl;
 		exit(0);
 	}
 
+	//Tratamiento del archivo ASE para obtener los valores pertinentes
 	t.seek("*MESH_NUMVERTEX");
-	int num_vertex = t.getint();
+	int num_vertex = t.getint(); //Numero de vertices de la mesh
 	std::cout << "num vertex: " << num_vertex << std::endl;
 	t.seek("*MESH_NUMFACES");
-	int num_faces = t.getint();
+	int num_faces = t.getint(); //Numero de caras (triangulos) de la mesh
 	std::cout << "num faces: " << num_faces << std::endl;
 
+	//Almacenamos las coordenadas de cada uno de los vertices
 	unique_vertices.resize(num_vertex);
-
 	for (int i = 0; i < num_vertex; i++) {
 		t.seek("*MESH_VERTEX");
 		t.getint();
@@ -312,10 +330,10 @@ bool Mesh::loadASE(const char* filename) {
 		unique_vertices[i] = v;
 	}
 	
+	//Almacenamos los aristas existentes en la mesh entre los vertices
 	t.seek("*MESH_FACE_LIST");
-	//vertices.resize(num_faces);
-
-	for (int i = 0; i < num_faces; i++) {
+	vertices.resize(num_faces*3);
+	for (int i = 0; i < num_faces*3; i = i+3) {
 		t.seek("*MESH_FACE");
 		t.getword();
 		t.getword();
@@ -326,18 +344,21 @@ bool Mesh::loadASE(const char* filename) {
 		t.getword();
 		int C = t.getint();
 
-		vertices.push_back(unique_vertices[A]);
-		vertices.push_back(unique_vertices[C]);
-		vertices.push_back(unique_vertices[B]);
+		//vertices.push_back(unique_vertices[A]);
+		//vertices.push_back(unique_vertices[C]);
+		//vertices.push_back(unique_vertices[B]);
+		vertices[i] = unique_vertices[A];
+		vertices[i+1] = unique_vertices[C];
+		vertices[i+2] = unique_vertices[B];
 	}
 
 
 	t.seek("*MESH_NUMTVERTEX");
-	int numtvertex = t.getint();
+	int numtvertex = t.getint(); //Numero de vertices de la textura
 	std::cout << "num TVERTEX: " << numtvertex << std::endl;
 	
+	//Almacenamos las coordenadas en 2D de cada vertice en la textura
 	unique_uvs.resize(numtvertex);
-	
 	for (int i = 0; i < numtvertex; i++) {
 		t.seek("*MESH_TVERT");
 		t.getint();
@@ -345,31 +366,31 @@ bool Mesh::loadASE(const char* filename) {
 		v.x = t.getfloat();
 		v.y = t.getfloat();
 		unique_uvs[i] = v;
-		//Checkup
-		//std::cout << "uvs " << i << " " << v.x << " " << v.y << std::endl;
 	}
 
 	t.seek("*MESH_NUMTVFACES");
-	int num_vfaces = t.getint();
-	//uvs.resize(num_vfaces);
-
-	for (int i = 0; i < num_vfaces; i++) {
+	int num_vfaces = t.getint(); //Numero de caras de la textura
+	
+	//Almacenamos las aristas que forman cada cara de la textura
+	uvs.resize(num_vfaces*3);
+	for (int i = 0; i < num_vfaces*3; i = i+3) {
 		t.seek("*MESH_TFACE");
 		t.getint(); 
 		int A = t.getint();
 		int B = t.getint();
 		int C = t.getint();
 
-		uvs.push_back(unique_uvs[A]);
-		uvs.push_back(unique_uvs[C]);
-		uvs.push_back(unique_uvs[B]);
-		//Checkup
-		//std::cout << "uvs " << i << " " << v.x << " " << v.y << std::endl;
+		//uvs.push_back(unique_uvs[A]);
+		//uvs.push_back(unique_uvs[C]);
+		//uvs.push_back(unique_uvs[B]);
+		uvs[i] = unique_uvs[A];
+		uvs[i+1] = unique_uvs[C];
+		uvs[i+2] = unique_uvs[B];
 	}
 
+	//Almacenamos las normales de la mesh
 	t.seek("*MESH_NORMALS");
-	//normals.resize(num_faces);
-
+	normals.resize(num_faces);
 	for (int i = 0; i < num_faces; i++) {
 		for (int j = 0; j < 3; j++) {
 			t.seek("*MESH_VERTEXNORMAL");
@@ -378,9 +399,8 @@ bool Mesh::loadASE(const char* filename) {
 			v.x = t.getfloat();
 			v.z = t.getfloat();
 			v.y = t.getfloat();
-			normals.push_back(v);
-			//Checkup
-			//std::cout << "normals " << i << " " << v.x << " " << v.y << " " << v.z << std::endl;
+			//normals.push_back(v);
+			normals[i] = v;
 		}
 	}
 
@@ -395,5 +415,60 @@ bool Mesh::loadASE(const char* filename) {
 		colors.push_back(Vector4(uvs[i].x, uvs[i].y, 0.0, 0.0));
 	}
 	*/
+
+	writeBIN(bin_filename.c_str());
+	return true;
+}
+
+bool Mesh::writeBIN(const char* filename) {
+	std::cout << "Creando BIN " << filename << std::endl;
+	sMeshbin header;
+	header.num_vertices = vertices.size();
+	header.num_normals = normals.size();
+	header.num_uvs = uvs.size();
+	header.format[0] = 'M';
+	header.format[1] = 'E';
+	header.format[2] = 'S';
+	header.format[3] = 'H';
+	
+	FILE* f = fopen(filename, "wb");
+	if (f == NULL) {
+		std::cout << "writeBIN()::Error al abrir archivo" << std::endl;
+		return false;
+	}
+	fwrite(&header, sizeof(sMeshbin), 1, f);
+	fwrite(&vertices[0], sizeof(Vector3), vertices.size(), f);
+	if (normals.size()) {
+		fwrite(&normals[0], sizeof(Vector3), normals.size(), f);
+	}
+	if (uvs.size()) {
+		fwrite(&uvs[0], sizeof(Vector2), uvs.size(), f);
+	}	
+	fclose(f);
+
+	return true;
+}
+
+bool Mesh::loadBIN(const char* filename) {
+	sMeshbin header;
+
+	FILE* f = fopen(filename, "rb");
+	if (f == NULL) {
+		std::cout << "loadBIN()::Error al abrir archivo" << std::endl;
+		return false;
+	}
+	fread(&header, sizeof(sMeshbin), 1, f);
+	vertices.resize(header.num_vertices);
+	fread(&vertices[0], sizeof(Vector3), header.num_vertices, f);
+	if (header.num_normals) {
+		normals.resize(header.num_normals);
+		fread(&normals[0], sizeof(Vector3), header.num_normals, f);
+	}
+	if (header.num_uvs) {
+		uvs.resize(header.num_uvs);
+		fread(&uvs[0], sizeof(Vector2), header.num_uvs, f);
+	}
+	fclose(f);
+
 	return true;
 }

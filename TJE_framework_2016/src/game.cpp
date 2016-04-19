@@ -9,6 +9,7 @@
 
 //some globals
 Mesh* mesh = NULL;
+Mesh* mesh_low = NULL;
 Texture* texture = NULL;
 Shader* shader = NULL;
 float angle = 0;
@@ -50,24 +51,34 @@ void Game::init(void)
 	//create a plane mesh
 	mesh = new Mesh();
 	//mesh->createPlane(10);
+	//Cargamos una malla en la variable mesh
 	long t1 = getTime();
-	if (mesh->loadASE("data/meshes/spitfire.ASE") == false) {
+	if (mesh->loadASE("data/meshes/spitfire/spitfire.ASE") == false) {
 		std::cout << "Mesh can not be loaded" << std::endl;
 		exit(0);
 	}
-
-	texture = new Texture();
-	if (texture->load("data/textures/spitfire_color_spec.TGA") == false) {
-		std::cout << "Texture can not be loaded" << std::endl;
+	/*if (mesh_low->loadASE("data/meshes/spitfire/spitfire_low.ASE") == false) {
+		std::cout << "Mesh can not be loaded" << std::endl;
 		exit(0);
-	}
+	}*/
+	//Cargamos la mesh a la VRAM
+	mesh->uploadToVRAM();
+	//mesh_low->uploadToVRAM();
 	long t2 = getTime();
 	std::cout << "Mesh load time : " << ((t2-t1)*0.001) << "s" << std::endl;
 
+	//Cargamos los shaders
 	shader = new Shader();
 	if( !shader->load("data/shaders/simple.vs","data/shaders/simple.fs") )
 	{
 		std::cout << "shader not found or error" << std::endl;
+		exit(0);
+	}
+
+	//Creamos e inicilizamos una textura
+	texture = new Texture();
+	if (texture->load("data/textures/spitfire_color_spec.TGA") == false) {
+		std::cout << "Texture can not be loaded" << std::endl;
 		exit(0);
 	}
 
@@ -96,7 +107,7 @@ void Game::render(void)
 	//create model matrix from plane
 	Matrix44 m;
     m.setScale(1,1,1);
-	m.rotate(angle * DEG2RAD, Vector3(0,1,0) ); //build a rotation matrix
+	//m.rotate(angle * DEG2RAD, Vector3(0,1,0) ); //build a rotation matrix
 
 	//draw the plane
 	if(0) //render using shader
@@ -118,6 +129,21 @@ void Game::render(void)
 		mesh->render(GL_TRIANGLES);
 		texture->unbind();
 		glPopMatrix();
+		
+		/*for (int i = 0; i < 10; i++) {
+			Vector3 pos(i * 10, 0, 0);
+			m.setTranslation(pos.x, pos.y, pos.z);
+			Mesh * render_mesh = mesh;
+			if (pos.distance(camera->eye) < 20) {
+				render_mesh = mesh_low;
+			}
+			glPushMatrix();
+			m.multGL();
+			texture->bind();
+			render_mesh->render(GL_TRIANGLES);
+			texture->unbind();
+			glPopMatrix();
+		}*/
 	}
     
     glDisable( GL_BLEND );

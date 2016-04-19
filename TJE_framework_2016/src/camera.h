@@ -7,7 +7,9 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#include "includes.h"
 #include "framework.h"
+#include "extra\clipper.h"
 
 class Camera
 {
@@ -16,6 +18,8 @@ public:
 	enum { PERSPECTIVE, ORTHOGRAPHIC }; //types of cameras available
 
 	char type; //camera type
+
+	Clipper clipper;
 
 	//vectors to define the orientation of the camera
 	Vector3 eye; //where is the camera
