@@ -9,6 +9,8 @@ struct sMeshbin {
 	int num_vertices;
 	int num_normals;
 	int num_uvs;
+	Vector3 c;
+	Vector3 hS;
 };
 
 Mesh::Mesh()
@@ -17,6 +19,9 @@ Mesh::Mesh()
 	normals_vbo_id = 0;
 	uvs_vbo_id = 0;
 	colors_vbo_id = 0;
+
+	center = Vector3();
+	halfSize = Vector3();
 }
 
 Mesh::Mesh( const Mesh& m )
@@ -320,6 +325,8 @@ bool Mesh::loadASE(const char* filename) {
 
 	//Almacenamos las coordenadas de cada uno de los vertices
 	unique_vertices.resize(num_vertex);
+	Vector3 max = Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+	Vector3 min = Vector3(FLT_MAX, FLT_MAX, FLT_MAX);
 	for (int i = 0; i < num_vertex; i++) {
 		t.seek("*MESH_VERTEX");
 		t.getint();
@@ -328,7 +335,17 @@ bool Mesh::loadASE(const char* filename) {
 		v.z = t.getfloat() * (-1);
 		v.y = t.getfloat();
 		unique_vertices[i] = v;
+
+		if (v.x > max.x) { max.x = v.x; }
+		if (v.y > max.y) { max.y = v.y; }
+		if (v.z > max.z) { max.z = v.z; }
+		if (v.x < min.x) { min.x = v.x; }
+		if (v.y < min.y) { min.y = v.y; }
+		if (v.z < min.z) { min.z = v.z; }
 	}
+	center = (max + min) * 0.5;
+	halfSize = max - center;
+	std::cout << "halfSize = " << halfSize.length() << std::endl;
 	
 	//Almacenamos los aristas existentes en la mesh entre los vertices
 	t.seek("*MESH_FACE_LIST");
@@ -351,7 +368,6 @@ bool Mesh::loadASE(const char* filename) {
 		vertices[i+1] = unique_vertices[B];
 		vertices[i+2] = unique_vertices[C];
 	}
-
 
 	t.seek("*MESH_NUMTVERTEX");
 	int numtvertex = t.getint(); //Numero de vertices de la textura
@@ -430,6 +446,8 @@ bool Mesh::writeBIN(const char* filename) {
 	header.format[1] = 'E';
 	header.format[2] = 'S';
 	header.format[3] = 'H';
+	header.c = center;
+	header.hS = halfSize;
 	
 	FILE* f = fopen(filename, "wb");
 	if (f == NULL) {
@@ -468,6 +486,8 @@ bool Mesh::loadBIN(const char* filename) {
 		uvs.resize(header.num_uvs);
 		fread(&uvs[0], sizeof(Vector2), header.num_uvs, f);
 	}
+	center = header.c;
+	halfSize = header.hS;
 	fclose(f);
 
 	return true;

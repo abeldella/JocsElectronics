@@ -7,7 +7,7 @@
 #include "includes.h"
 #include <map>
 #include <string>
-
+#include <assert.h>
 
 
 // TEXTURE CLASS
@@ -39,4 +39,18 @@ protected:
 	TGAInfo* loadTGA(const char* filename);
 };
 
+
+class TextureManager {
+public:
+	static TextureManager* instance;
+	static TextureManager* getInstance() {
+		if (instance == NULL)
+			instance = new TextureManager();
+		return instance;
+	}
+	Texture* getTexture(const char* filename);
+private:
+	TextureManager();
+	std::map<std::string, Texture*> s_map;
+};
 #endif

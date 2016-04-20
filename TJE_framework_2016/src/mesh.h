@@ -19,6 +19,9 @@ public:
 	std::vector< Vector2 > uvs;	 //here we store the texture coordinates
 	std::vector< Vector2 > unique_uvs;	 //here we store the texture coordinates
 	std::vector< Vector4 > colors;	 //here we store colors by vertex
+	
+	Vector3 center;
+	Vector3 halfSize;
 
 	unsigned int vertices_vbo_id;
 	unsigned int normals_vbo_id;

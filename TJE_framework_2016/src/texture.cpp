@@ -169,3 +169,27 @@ Texture::TGAInfo* Texture::loadTGA(const char* filename)
 
 	return tgainfo;
 }
+
+TextureManager* TextureManager::instance = NULL;
+
+TextureManager::TextureManager() {
+	assert(instance == NULL); //must be only one
+	instance = this;
+}
+
+Texture* TextureManager::getTexture(const char* filename) {
+	auto it = s_map.find(filename);
+	if (it != s_map.end())
+		return it->second;
+	Texture* texture = new Texture();
+	bool found = texture->load(filename);
+	if (!found) {
+		std::cout << "Texture not found: " << filename << std::endl;
+		assert(!"file not found");
+		delete texture;
+		return NULL;
+	}
+
+	s_map[filename] = texture;
+	return texture;
+}

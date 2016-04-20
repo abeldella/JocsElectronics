@@ -19,6 +19,8 @@ void Camera::set()
 	glMatrixMode( GL_PROJECTION );
 	glLoadMatrixf( projection_matrix.m );
 	glMatrixMode( GL_MODELVIEW );
+
+	clipper.ExtractFrustum();
 }
 
 void Camera::updateViewMatrix()

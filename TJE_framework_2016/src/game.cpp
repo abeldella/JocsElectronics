@@ -50,6 +50,7 @@ void Game::init(void)
 
 	//create a plane mesh
 	mesh = new Mesh();
+	mesh_low = new Mesh();
 	//mesh->createPlane(10);
 	//Cargamos una malla en la variable mesh
 	long t1 = getTime();
@@ -57,13 +58,14 @@ void Game::init(void)
 		std::cout << "Mesh can not be loaded" << std::endl;
 		exit(0);
 	}
-	/*if (mesh_low->loadASE("data/meshes/spitfire/spitfire_low.ASE") == false) {
+	
+	if (mesh_low->loadASE("data/meshes/spitfire/spitfire_low.ASE") == false) {
 		std::cout << "Mesh can not be loaded" << std::endl;
 		exit(0);
-	}*/
+	}
 	//Cargamos la mesh a la VRAM
 	mesh->uploadToVRAM();
-	//mesh_low->uploadToVRAM();
+	mesh_low->uploadToVRAM();
 	long t2 = getTime();
 	std::cout << "Mesh load time : " << ((t2-t1)*0.001) << "s" << std::endl;
 
@@ -123,28 +125,34 @@ void Game::render(void)
 	}
 	else //render using fixed pipeline (DEPRECATED)
 	{
-		glPushMatrix();
+		/*glPushMatrix();
 		m.multGL();
 		texture->bind();
 		mesh->render(GL_TRIANGLES);
 		texture->unbind();
-		glPopMatrix();
-		
-		/*for (int i = 0; i < 10; i++) {
-			Vector3 pos(i * 10, 0, 0);
-			m.setTranslation(pos.x, pos.y, pos.z);
-			Mesh * render_mesh = mesh;
-			if (pos.distance(camera->eye) < 20) {
-				render_mesh = mesh_low;
+		glPopMatrix();*/
+		float render_halfSize;
+		for (int j = -50; j < 50; j++) {
+			for (int i = -50; i < 50; i++) {
+				Vector3 pos(i * 10, j * 10, 0);
+				m.setTranslation(pos.x, pos.y, pos.z);
+				Mesh * render_mesh = mesh;
+				if (pos.distance(camera->eye) > 30) {
+					render_mesh = mesh_low;
+				}
+				render_halfSize = render_mesh->halfSize.length();
+				glPushMatrix();
+				m.multGL();
+				texture->bind();
+				if (camera->clipper.SphereInFrustum(pos.x + render_mesh->center.x, pos.y + render_mesh->center.y, pos.z + render_mesh->center.z, render_halfSize)) {
+					render_mesh->render(GL_TRIANGLES);
+				}
+				texture->unbind();
+				glPopMatrix();
 			}
-			glPushMatrix();
-			m.multGL();
-			texture->bind();
-			render_mesh->render(GL_TRIANGLES);
-			texture->unbind();
-			glPopMatrix();
-		}*/
+		}
 	}
+	
     
     glDisable( GL_BLEND );
 
