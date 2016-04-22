@@ -7,9 +7,29 @@
 
 #include <vector>
 #include "framework.h"
+#include <map>
+#include <string>
+#include <assert.h>
 
 class Shader;
+class Mesh;
 
+//MESHMANAGER CLASS
+class MeshManager {
+public:
+	static MeshManager* instance;
+	static MeshManager* getInstance() {
+		if (instance == NULL)
+			instance = new MeshManager();
+		return instance;
+	}
+	Mesh* getMesh(const char* filename);
+private:
+	MeshManager();
+	std::map<std::string, Mesh*> s_map;
+};
+
+//MESH CLASS
 class Mesh
 {
 public:
@@ -44,6 +64,9 @@ public:
 	bool loadASE(const char* filename); //Carga un archivo ASE para inicializar los vectores de la mesh
 	bool writeBIN(const char* filename);
 	bool loadBIN(const char* filename);
+	static Mesh* get(const char* filename) {
+		return MeshManager::getInstance()->getMesh(filename);
+	}
 };
 
 #endif

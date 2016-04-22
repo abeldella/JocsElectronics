@@ -43,32 +43,23 @@ void Game::init(void)
 	glEnable( GL_CULL_FACE ); //render both sides of every triangle
 	glEnable( GL_DEPTH_TEST ); //check the occlusions using the Z buffer
 
+	//Inicilizamos los diferentes managers
+	TextureManager* textureMng = TextureManager::getInstance();
+	MeshManager* meshMng = MeshManager::getInstance();
+	//ShaderManager* shaderMng = ShaderManager::getInstance();
+
 	//create our camera
 	camera = new Camera();
 	camera->lookAt(Vector3(0,25,25),Vector3(0,0,0), Vector3(0,1,0)); //position the camera and point to 0,0,0
 	camera->setPerspective(70,window_width/(float)window_height,0.1,10000); //set the projection, we want to be perspective
 
-	//create a plane mesh
-	mesh = new Mesh();
-	mesh_low = new Mesh();
-	//mesh->createPlane(10);
-	//Cargamos una malla en la variable mesh
-	long t1 = getTime();
-	if (mesh->loadASE("data/meshes/spitfire/spitfire.ASE") == false) {
-		std::cout << "Mesh can not be loaded" << std::endl;
-		exit(0);
-	}
+	//Cargamos Meshes
+	//long t1 = getTime();
+	mesh = Mesh::get("data/meshes/spitfire/spitfire.ASE");
+	mesh_low = Mesh::get("data/meshes/spitfire/spitfire_low.ASE");
+	//long t2 = getTime();
+	//std::cout << "Mesh load time : " << ((t2 - t1)*0.001) << "s" << std::endl;
 	
-	if (mesh_low->loadASE("data/meshes/spitfire/spitfire_low.ASE") == false) {
-		std::cout << "Mesh can not be loaded" << std::endl;
-		exit(0);
-	}
-	//Cargamos la mesh a la VRAM
-	mesh->uploadToVRAM();
-	mesh_low->uploadToVRAM();
-	long t2 = getTime();
-	std::cout << "Mesh load time : " << ((t2-t1)*0.001) << "s" << std::endl;
-
 	//Cargamos los shaders
 	shader = new Shader();
 	if( !shader->load("data/shaders/simple.vs","data/shaders/simple.fs") )
@@ -77,12 +68,8 @@ void Game::init(void)
 		exit(0);
 	}
 
-	//Creamos e inicilizamos una textura
-	texture = new Texture();
-	if (texture->load("data/textures/spitfire_color_spec.TGA") == false) {
-		std::cout << "Texture can not be loaded" << std::endl;
-		exit(0);
-	}
+	//Cargamos texturas
+	texture = Texture::get("data/textures/spitfire_color_spec.TGA");
 
 	//hide the cursor
 	SDL_ShowCursor(!mouse_locked); //hide or show the mouse

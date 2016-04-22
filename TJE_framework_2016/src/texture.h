@@ -9,6 +9,22 @@
 #include <string>
 #include <assert.h>
 
+class Texture; //Forward declaration
+
+//TEXTUREMANAGER CLASS
+class TextureManager {
+public:
+	static TextureManager* instance;
+	static TextureManager* getInstance() {
+		if (instance == NULL)
+			instance = new TextureManager();
+		return instance;
+	}
+	Texture* getTexture(const char* filename);
+private:
+	TextureManager();
+	std::map<std::string, Texture*> s_map;
+};
 
 // TEXTURE CLASS
 class Texture
@@ -31,6 +47,9 @@ public:
 	void bind();
 	void unbind();
 	static void UnbindAll();
+	static Texture* get(const char* filename) {
+		return TextureManager::getInstance()->getTexture(filename);
+	}
 
 	bool load(const char* filename, bool mipmaps = true);
 	void generateMipmaps();
@@ -39,18 +58,4 @@ protected:
 	TGAInfo* loadTGA(const char* filename);
 };
 
-
-class TextureManager {
-public:
-	static TextureManager* instance;
-	static TextureManager* getInstance() {
-		if (instance == NULL)
-			instance = new TextureManager();
-		return instance;
-	}
-	Texture* getTexture(const char* filename);
-private:
-	TextureManager();
-	std::map<std::string, Texture*> s_map;
-};
 #endif

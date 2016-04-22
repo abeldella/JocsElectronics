@@ -492,3 +492,27 @@ bool Mesh::loadBIN(const char* filename) {
 
 	return true;
 }
+
+MeshManager* MeshManager::instance = NULL;
+
+MeshManager::MeshManager() {
+	assert(instance == NULL); //must be only one
+	instance = this;
+}
+
+Mesh* MeshManager::getMesh(const char* filename) {
+	auto it = s_map.find(filename);
+	if (it != s_map.end())
+		return it->second;
+	Mesh* mesh = new Mesh();
+	bool found = mesh->loadASE(filename);
+	if (!found) {
+		std::cout << "Mesh not found: " << filename << std::endl;
+		assert(!"file not found");
+		delete mesh;
+		return NULL;
+	}
+	mesh->uploadToVRAM();
+	s_map[filename] = mesh;
+	return mesh;
+}
