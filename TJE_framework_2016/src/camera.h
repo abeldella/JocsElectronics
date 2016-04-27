@@ -7,9 +7,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "includes.h"
 #include "framework.h"
-#include "extra\clipper.h"
 
 class Camera
 {
@@ -18,8 +16,6 @@ public:
 	enum { PERSPECTIVE, ORTHOGRAPHIC }; //types of cameras available
 
 	char type; //camera type
-
-	Clipper clipper;
 
 	//vectors to define the orientation of the camera
 	Vector3 eye; //where is the camera
@@ -34,6 +30,9 @@ public:
 
 	//for orthogonal projection
 	float left,right,top,bottom;
+
+	//planes
+	float frustum[6][4];
 
 	//matrices
 	Matrix44 view_matrix;
@@ -55,9 +54,15 @@ public:
 	void setOrthographic(float left, float right, float bottom, float top, float near_plane, float far_plane);
 	void lookAt(const Vector3& eye, const Vector3& center, const Vector3& up);
 
+	void extractFrustum();
+
 	//compute the matrices
 	void updateViewMatrix();
 	void updateProjectionMatrix();
+
+	//culling
+	bool testPointInFrustum( Vector3 v );
+	bool testSphereInFrustum( Vector3 v, float radius);
 };
 
 

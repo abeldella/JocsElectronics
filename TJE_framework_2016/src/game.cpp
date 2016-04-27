@@ -4,10 +4,13 @@
 #include "texture.h"
 #include "rendertotexture.h"
 #include "shader.h"
+#include "entity.h"
 
 #include <cmath>
 
 //some globals
+Entity* root = NULL;
+
 Mesh* mesh = NULL;
 Mesh* mesh_low = NULL;
 Texture* texture = NULL;
@@ -37,6 +40,9 @@ void Game::init(void)
 {
     std::cout << " * Path: " << getPath() << std::endl;
     
+	//Scene inicialization 
+	root = new Entity();
+
     //SDL_SetWindowSize(window, 50,50);
 
 	//OpenGL flags
@@ -52,24 +58,38 @@ void Game::init(void)
 	camera = new Camera();
 	camera->lookAt(Vector3(0,25,25),Vector3(0,0,0), Vector3(0,1,0)); //position the camera and point to 0,0,0
 	camera->setPerspective(70,window_width/(float)window_height,0.1,10000); //set the projection, we want to be perspective
-
+																
 	//Cargamos Meshes
 	//long t1 = getTime();
 	mesh = Mesh::get("data/meshes/spitfire/spitfire.ASE");
 	mesh_low = Mesh::get("data/meshes/spitfire/spitfire_low.ASE");
 	//long t2 = getTime();
 	//std::cout << "Mesh load time : " << ((t2 - t1)*0.001) << "s" << std::endl;
-	
+	//Cargamos texturas
+	texture = Texture::get("data/textures/spitfire_color_spec.TGA");
+
+	for (int i = 0; i < 10000; i++) {
+
+		EntityMesh* entity = new EntityMesh();
+		entity->mesh = mesh;
+		entity->lod_mesh = mesh_low;
+		entity->texture = texture;
+		Vector3 pos;
+		pos.random(1000);
+		entity->local_matrix.setTranslation( pos.x, pos.y, pos.z );
+		root->addChildren(entity);
+	}
+
+
 	//Cargamos los shaders
-	shader = new Shader();
+	/*shader = new Shader();
 	if( !shader->load("data/shaders/simple.vs","data/shaders/simple.fs") )
 	{
 		std::cout << "shader not found or error" << std::endl;
 		exit(0);
-	}
+	}*/
 
-	//Cargamos texturas
-	texture = Texture::get("data/textures/spitfire_color_spec.TGA");
+	
 
 	//hide the cursor
 	SDL_ShowCursor(!mouse_locked); //hide or show the mouse
@@ -92,8 +112,10 @@ void Game::render(void)
 
 	//Draw out world
 	drawGrid(500); //background grid
+	root->render( camera );
+
     
-	//create model matrix from plane
+	/*//create model matrix from plane
 	Matrix44 m;
     m.setScale(1,1,1);
 	//m.rotate(angle * DEG2RAD, Vector3(0,1,0) ); //build a rotation matrix
@@ -112,12 +134,12 @@ void Game::render(void)
 	}
 	else //render using fixed pipeline (DEPRECATED)
 	{
-		/*glPushMatrix();
+		glPushMatrix();
 		m.multGL();
 		texture->bind();
 		mesh->render(GL_TRIANGLES);
 		texture->unbind();
-		glPopMatrix();*/
+		glPopMatrix();
 		float render_halfSize;
 		for (int j = -50; j < 50; j++) {
 			for (int i = -50; i < 50; i++) {
@@ -131,15 +153,15 @@ void Game::render(void)
 				glPushMatrix();
 				m.multGL();
 				texture->bind();
-				if (camera->clipper.SphereInFrustum(pos.x + render_mesh->center.x, pos.y + render_mesh->center.y, pos.z + render_mesh->center.z, render_halfSize)) {
+				if (camera->testSphereInFrustum(pos + mesh->center, render_halfSize)) {
 					render_mesh->render(GL_TRIANGLES);
 				}
 				texture->unbind();
 				glPopMatrix();
 			}
 		}
-	}
-	
+	}*/
+
     
     glDisable( GL_BLEND );
 
