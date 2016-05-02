@@ -20,7 +20,7 @@ public:
 	Entity* parent;
 
 	Entity();
-	~Entity();
+	virtual ~Entity();
 
 	virtual void render( Camera* camera );
 	virtual void update(float dt);
@@ -44,11 +44,15 @@ public:
 	Mesh* mesh;
 	Mesh* lod_mesh;
 	Texture* texture;
+	
+	bool two_sided;
+	bool frustum_test;
 
 	EntityMesh();
-	//~EntityMesh();
+	~EntityMesh();
 	
 	void render( Camera* camera );
+	void setup(const char* mesh, const char* texture = NULL, const char* lod_mesh = NULL);
 
 };
 

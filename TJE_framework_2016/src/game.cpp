@@ -5,20 +5,24 @@
 #include "rendertotexture.h"
 #include "shader.h"
 #include "entity.h"
-
+#include "world.h"
 #include <cmath>
 
 //some globals
 Entity* root = NULL;
-
 Mesh* mesh = NULL;
 Mesh* mesh_low = NULL;
 Texture* texture = NULL;
 Shader* shader = NULL;
 float angle = 0;
 RenderToTexture* rt = NULL;
-
 Game* Game::instance = NULL;
+
+World* world = NULL;
+
+EntityMesh* island = NULL;
+EntityMesh* sea = NULL;
+EntityMesh* test = NULL;
 
 Game::Game(SDL_Window* window)
 {
@@ -41,6 +45,7 @@ void Game::init(void)
     std::cout << " * Path: " << getPath() << std::endl;
     
 	//Scene inicialization 
+	world = World::getInstance();
 	root = new Entity();
 
     //SDL_SetWindowSize(window, 50,50);
@@ -58,7 +63,14 @@ void Game::init(void)
 	camera = new Camera();
 	camera->lookAt(Vector3(0,25,25),Vector3(0,0,0), Vector3(0,1,0)); //position the camera and point to 0,0,0
 	camera->setPerspective(70,window_width/(float)window_height,0.1,10000); //set the projection, we want to be perspective
-																
+		
+
+	//Skybox 
+	world->skybox = new EntityMesh();
+	world->skybox->setup("data/meshes/skybox/cubemap.ASE", "data/textures/cielo.TGA");
+	world->skybox->local_matrix.setScale(100, 100, 100);
+	world->skybox->frustum_test = false;
+
 	//Cargamos Meshes
 	//long t1 = getTime();
 	mesh = Mesh::get("data/meshes/spitfire/spitfire.ASE");
@@ -67,8 +79,9 @@ void Game::init(void)
 	//std::cout << "Mesh load time : " << ((t2 - t1)*0.001) << "s" << std::endl;
 	//Cargamos texturas
 	texture = Texture::get("data/textures/spitfire_color_spec.TGA");
-
-	for (int i = 0; i < 10000; i++) {
+	
+	//EntityMesh* prev_entity = NULL;
+	for (int i = 0; i < 100; i++) {
 
 		EntityMesh* entity = new EntityMesh();
 		entity->mesh = mesh;
@@ -77,9 +90,43 @@ void Game::init(void)
 		Vector3 pos;
 		pos.random(1000);
 		entity->local_matrix.setTranslation( pos.x, pos.y, pos.z );
+		
 		root->addChildren(entity);
+
+	}
+	//Avion para testear delete
+	test = new EntityMesh();
+	test->mesh = mesh;
+	test->lod_mesh = mesh_low;
+	test->texture = texture;
+	Vector3 pos = camera->eye;
+	test->local_matrix.setTranslation( pos.x, pos.y-10, pos.z-10 );
+	//test->local_matrix.rotateLocal(3.14, Vector3(0, -1, 0));
+	//test->local_matrix.rotateLocal(0.6, Vector3(-1, 0, 0));
+	root->addChildren(test);
+
+	for (int i = -3; i <= 3; i++) {
+		for (int j = -3; j <= 3; j++) {
+			island = new EntityMesh();
+			island->setup("data/meshes/island.ASE","data/textures/island_color_luz.TGA");
+			island->local_matrix.setTranslation(i*island->mesh->halfSize.x, -1000, j*island->mesh->halfSize.z);
+			root->addChildren(island);
+		}
 	}
 
+	sea = new EntityMesh();
+	sea->setup("data/meshes/agua.ASE", "data/textures/agua.TGA");
+	sea->local_matrix.setTranslation(0,-1020,0);
+	//root->addChildren(sea);
+
+
+	/*	Codigo para composición de meshes, por ejemplo avion con misil.
+		if (prev_entity) {
+		prev_entity->addChildren(entity);
+	}
+	else
+		root->addChildren(entity);
+	prev_entity = entity;*/
 
 	//Cargamos los shaders
 	/*shader = new Shader();
@@ -110,8 +157,30 @@ void Game::render(void)
 	//Put the camera matrices on the stack of OpenGL (only for fixed rendering)
 	camera->set();
 
+	//Desactivar el depth buffer de openGL para pintar el skybox
+	glDisable(GL_DEPTH_TEST);
+	world->skybox->local_matrix.setTranslation(camera->eye.x, camera->eye.y, camera->eye.z);
+	world->skybox->render( camera );
+	glEnable(GL_DEPTH_TEST);
+	
+
+	/*Hack de la camara para el ejemplo del planeta lejano creo que serviria para el ejemplo de la cabina
+	Camera camera2;
+	camera2 = *camera;
+	camera2.lookAt( Vector3(0,0,0), camera->center - camera->eye, Vector3(0,1,0) );
+	camera2.set();		//Cambiar las camaras en opengl
+	planet->render( &camera2 );
+	camera->set();		//Volvemos a la camara inicial
+	
+	Lo mismo con el skybox_root (Entity) - Podemos poner un rotation en update()
+	skybox_root->local_matrix.setTranslation(camera->eye.x, camera->eye.y, camera->eye.z);
+	skybox_root->render(camera);
+
+	glClear( GL_DEPTH_BUFFER_BIT );
+	*/
+
 	//Draw out world
-	drawGrid(500); //background grid
+	drawGrid(500); //background gridx
 	root->render( camera );
 
     
@@ -165,6 +234,16 @@ void Game::render(void)
     
     glDisable( GL_BLEND );
 
+	/*float time_per_frame = (getTime() - last);
+	float fps = 1000.0 / time_per_frame;
+	if (frame % 4 == 0)
+		this->fps = fps;
+	drawText(2, 2, std::string("FPS: ") + std::to_string(int(this->fps)), this->fps > 30 ? Vector3(1, 1, 1) : Vector3(1, 0, 0), 2);
+	drawText(2, 20, std::string("DIPs: ") + std::to_string(Mesh::s_num_meshes_rendered), this->fps > 30 ? Vector3(1, 1, 1) : Vector3(1, 0, 0), 2);
+	last = getTime();
+	Mesh::s_num_meshes_rendered = 0;*/
+
+
 	//swap between front buffer and back buffer
 	SDL_GL_SwapWindow(this->window);
 }
@@ -172,6 +251,8 @@ void Game::render(void)
 void Game::update(double seconds_elapsed)
 {
 	double speed = seconds_elapsed * 100; //the speed is defined by the seconds_elapsed so it goes constant
+
+	//root->update(seconds_elapsed);
 
 	//mouse input to rotate the cam
 	if ((mouse_state & SDL_BUTTON_LEFT) || mouse_locked ) //is left button pressed?

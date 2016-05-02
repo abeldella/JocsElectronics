@@ -360,10 +360,6 @@ bool Mesh::loadASE(const char* filename) {
 		int B = t.getint();
 		t.getword();
 		int C = t.getint();
-
-		//vertices.push_back(unique_vertices[A]);
-		//vertices.push_back(unique_vertices[C]);
-		//vertices.push_back(unique_vertices[B]);
 		vertices[i] = unique_vertices[A];
 		vertices[i+1] = unique_vertices[B];
 		vertices[i+2] = unique_vertices[C];
@@ -395,10 +391,6 @@ bool Mesh::loadASE(const char* filename) {
 		int A = t.getint();
 		int B = t.getint();
 		int C = t.getint();
-
-		//uvs.push_back(unique_uvs[A]);
-		//uvs.push_back(unique_uvs[C]);
-		//uvs.push_back(unique_uvs[B]);
 		uvs[i] = unique_uvs[A];
 		uvs[i+1] = unique_uvs[B];
 		uvs[i+2] = unique_uvs[C];
@@ -415,23 +407,9 @@ bool Mesh::loadASE(const char* filename) {
 			v.x = t.getfloat();
 			v.z = t.getfloat() * (-1);
 			v.y = t.getfloat();
-			//normals.push_back(v);
 			normals[i] = v;
 		}
 	}
-
-	//checkup normals and uvs
-	/*
-	for (int i = 0; i < normals.size(); i++) {
-		colors.push_back(Vector4(normals[i].x, normals[i].y, normals[i].z, 0.0));
-	}
-
-	
-	for (int i = 0; i < uvs.size(); i++) {
-		colors.push_back(Vector4(uvs[i].x, uvs[i].y, 0.0, 0.0));
-	}
-	*/
-
 	writeBIN(bin_filename.c_str());
 	return true;
 }
