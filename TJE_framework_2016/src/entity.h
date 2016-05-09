@@ -8,6 +8,7 @@
 class Camera;
 class Mesh;
 class Texture;
+class Shader;
 
 class Entity
 {
@@ -24,6 +25,10 @@ public:
 
 	virtual void render( Camera* camera );
 	virtual void update(float dt);
+
+	//Este metodo es para mover un objeto quiza no encaja en entity sino en entity mesh
+	void move(Vector3 v);
+	void rotate(float angle_in_deg, Vector3 v);
 
 	void addChildren(Entity* entity);
 
@@ -44,16 +49,34 @@ public:
 	Mesh* mesh;
 	Mesh* lod_mesh;
 	Texture* texture;
-	
+	Shader* shader;
+
 	bool two_sided;
 	bool frustum_test;
 
 	EntityMesh();
-	~EntityMesh();
+	virtual ~EntityMesh();
 	
 	void render( Camera* camera );
 	void setup(const char* mesh, const char* texture = NULL, const char* lod_mesh = NULL);
+	void update(float dt);
 
 };
+
+
+
+class Fighter : public EntityMesh
+{
+public:
+	float speed;
+	Vector3 velocity;
+	Vector3 camera_eye;
+
+	Fighter();
+
+	void update(float dt);
+	void shoot();
+};
+
 
 #endif

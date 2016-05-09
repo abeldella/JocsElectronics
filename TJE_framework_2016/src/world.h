@@ -29,6 +29,13 @@ public:
 	//Metodo Factory o create entity
 	Entity* factory(const char* filename);
 
+	void createSkybox();
+	void createPlane();
+	Entity* createEntity(Vector3 pos);
+	void docCreateEntity(Vector3 pos);
+	void createTerrain();
+	void createBoss(const char* name, const char* texture);
+
 };
 
 

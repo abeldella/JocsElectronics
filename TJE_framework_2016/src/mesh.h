@@ -64,6 +64,11 @@ public:
 	bool loadASE(const char* filename); //Carga un archivo ASE para inicializar los vectores de la mesh
 	bool writeBIN(const char* filename);
 	bool loadBIN(const char* filename);
+	bool loadOBJ(const char* filename);
+
+	std::vector<std::string> tokenize(const std::string& source, const char* delimiters, bool process_strings = NULL);
+	Vector3 parseVector3(const char* text, const char separator);
+
 	static Mesh* get(const char* filename) {
 		return MeshManager::getInstance()->getMesh(filename);
 	}

@@ -6,23 +6,19 @@
 #include "shader.h"
 #include "entity.h"
 #include "world.h"
+#include "bullets.h"
 #include <cmath>
 
 //some globals
 Entity* root = NULL;
-Mesh* mesh = NULL;
-Mesh* mesh_low = NULL;
-Texture* texture = NULL;
-Shader* shader = NULL;
 float angle = 0;
 RenderToTexture* rt = NULL;
 Game* Game::instance = NULL;
 
+BulletMaganer* bulletMng;
 World* world = NULL;
-
-EntityMesh* island = NULL;
-EntityMesh* sea = NULL;
-EntityMesh* test = NULL;
+Fighter* player;
+float time_scale = 1.0;
 
 Game::Game(SDL_Window* window)
 {
@@ -46,7 +42,7 @@ void Game::init(void)
     
 	//Scene inicialization 
 	world = World::getInstance();
-	root = new Entity();
+	world->root = new Entity();
 
     //SDL_SetWindowSize(window, 50,50);
 
@@ -57,67 +53,37 @@ void Game::init(void)
 	//Inicilizamos los diferentes managers
 	TextureManager* textureMng = TextureManager::getInstance();
 	MeshManager* meshMng = MeshManager::getInstance();
+	bulletMng = BulletMaganer::getInstance();
 	//ShaderManager* shaderMng = ShaderManager::getInstance();
 
 	//create our camera
-	camera = new Camera();
-	camera->lookAt(Vector3(0,25,25),Vector3(0,0,0), Vector3(0,1,0)); //position the camera and point to 0,0,0
-	camera->setPerspective(70,window_width/(float)window_height,0.1,10000); //set the projection, we want to be perspective
-		
+	free_camera = new Camera();
+	free_camera->lookAt(Vector3(0,25,25),Vector3(0,0,0), Vector3(0,1,0)); //position the camera and point to 0,0,0
+	free_camera->setPerspective(70,window_width/(float)window_height,0.1,10000); //set the projection, we want to be perspective
+	current_camera = free_camera;
 
-	//Skybox 
-	world->skybox = new EntityMesh();
-	world->skybox->setup("data/meshes/skybox/cubemap.ASE", "data/textures/cielo.TGA");
-	world->skybox->local_matrix.setScale(100, 100, 100);
-	world->skybox->frustum_test = false;
+	/*world->createSkybox();
+	world->createPlane();
+	world->createTerrain();*/
+	world->factory("data/worlds/world_test.txt");
 
 	//Cargamos Meshes
 	//long t1 = getTime();
-	mesh = Mesh::get("data/meshes/spitfire/spitfire.ASE");
-	mesh_low = Mesh::get("data/meshes/spitfire/spitfire_low.ASE");
 	//long t2 = getTime();
 	//std::cout << "Mesh load time : " << ((t2 - t1)*0.001) << "s" << std::endl;
-	//Cargamos texturas
-	texture = Texture::get("data/textures/spitfire_color_spec.TGA");
-	
-	//EntityMesh* prev_entity = NULL;
-	for (int i = 0; i < 100; i++) {
+	/*Shader* fog_shader = Shader::load("data/shaders/fog.vs", "data/.-------");
+	fog_shader->enable();
+	fog_shader->setVector3("u_fog_color", fog_color);*/
 
-		EntityMesh* entity = new EntityMesh();
-		entity->mesh = mesh;
-		entity->lod_mesh = mesh_low;
-		entity->texture = texture;
-		Vector3 pos;
-		pos.random(1000);
-		entity->local_matrix.setTranslation( pos.x, pos.y, pos.z );
-		
-		root->addChildren(entity);
-
-	}
 	//Avion para testear delete
-	test = new EntityMesh();
-	test->mesh = mesh;
-	test->lod_mesh = mesh_low;
-	test->texture = texture;
-	Vector3 pos = camera->eye;
-	test->local_matrix.setTranslation( pos.x, pos.y-10, pos.z-10 );
-	//test->local_matrix.rotateLocal(3.14, Vector3(0, -1, 0));
-	//test->local_matrix.rotateLocal(0.6, Vector3(-1, 0, 0));
-	root->addChildren(test);
+	player = (Fighter*)world->createEntity(Vector3(0, 1000, 0));
+	world->root->addChildren(player);
 
-	for (int i = -3; i <= 3; i++) {
-		for (int j = -3; j <= 3; j++) {
-			island = new EntityMesh();
-			island->setup("data/meshes/island.ASE","data/textures/island_color_luz.TGA");
-			island->local_matrix.setTranslation(i*island->mesh->halfSize.x, -1000, j*island->mesh->halfSize.z);
-			root->addChildren(island);
-		}
-	}
+	player_camera = new Camera();
+	player_camera->setPerspective(70, window_width / (float)window_height, 0.1, 10000);
+	player_camera->lookAt(player->getGlobalMatrix() * Vector3(0, 2, -5), player->getGlobalMatrix() *  Vector3(0, 0, 20), Vector3(0, 1, 0));
+	current_camera = player_camera;
 
-	sea = new EntityMesh();
-	sea->setup("data/meshes/agua.ASE", "data/textures/agua.TGA");
-	sea->local_matrix.setTranslation(0,-1020,0);
-	//root->addChildren(sea);
 
 
 	/*	Codigo para composición de meshes, por ejemplo avion con misil.
@@ -155,12 +121,12 @@ void Game::render(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//Put the camera matrices on the stack of OpenGL (only for fixed rendering)
-	camera->set();
+	current_camera->set();
 
 	//Desactivar el depth buffer de openGL para pintar el skybox
 	glDisable(GL_DEPTH_TEST);
-	world->skybox->local_matrix.setTranslation(camera->eye.x, camera->eye.y, camera->eye.z);
-	world->skybox->render( camera );
+	world->skybox->local_matrix.setTranslation(current_camera->eye.x, current_camera->eye.y, current_camera->eye.z);
+	world->skybox->render(current_camera);
 	glEnable(GL_DEPTH_TEST);
 	
 
@@ -180,9 +146,9 @@ void Game::render(void)
 	*/
 
 	//Draw out world
-	drawGrid(500); //background gridx
-	root->render( camera );
-
+	//drawGrid(500); //background gridx
+	world->root->render(current_camera);
+	bulletMng->render(current_camera);
     
 	/*//create model matrix from plane
 	Matrix44 m;
@@ -250,25 +216,55 @@ void Game::render(void)
 
 void Game::update(double seconds_elapsed)
 {
+	world->root->update(seconds_elapsed * time_scale);
+	bulletMng->update(seconds_elapsed * time_scale);
 	double speed = seconds_elapsed * 100; //the speed is defined by the seconds_elapsed so it goes constant
 
-	//root->update(seconds_elapsed);
 
-	//mouse input to rotate the cam
-	if ((mouse_state & SDL_BUTTON_LEFT) || mouse_locked ) //is left button pressed?
-	{
-		camera->rotate(mouse_delta.x * 0.005, Vector3(0,-1,0));
-		camera->rotate(mouse_delta.y * 0.005, camera->getLocalVector( Vector3(-1,0,0)));
+	if (current_camera == free_camera) {
+
+		//mouse input to rotate the cam
+		if ((mouse_state & SDL_BUTTON_LEFT) || mouse_locked) //is left button pressed?
+		{
+			current_camera->rotate(mouse_delta.x * 0.005, Vector3(0, -1, 0));
+			current_camera->rotate(mouse_delta.y * 0.005, current_camera->getLocalVector(Vector3(-1, 0, 0)));
+		}
+
+		//async input to move the camera around
+		if (keystate[SDL_SCANCODE_LSHIFT]) speed *= 10; //move faster with left shift
+		if (keystate[SDL_SCANCODE_W] || keystate[SDL_SCANCODE_UP]) current_camera->move(Vector3(0, 0, 1) * speed);
+		if (keystate[SDL_SCANCODE_S] || keystate[SDL_SCANCODE_DOWN]) current_camera->move(Vector3(0, 0, -1) * speed);
+		if (keystate[SDL_SCANCODE_A] || keystate[SDL_SCANCODE_LEFT]) current_camera->move(Vector3(1, 0, 0) * speed);
+		if (keystate[SDL_SCANCODE_D] || keystate[SDL_SCANCODE_RIGHT]) current_camera->move(Vector3(-1, 0, 0) * speed);
+
+		//to navigate with the mouse fixed in the middle
+	}
+	else if(current_camera == player_camera){
+
+		if (keystate[SDL_SCANCODE_W] || keystate[SDL_SCANCODE_UP]) player->rotate(-90 * seconds_elapsed, Vector3(1,0,0));
+		if (keystate[SDL_SCANCODE_S] || keystate[SDL_SCANCODE_DOWN]) player->rotate(90 * seconds_elapsed, Vector3(1, 0, 0));
+		if (keystate[SDL_SCANCODE_A] || keystate[SDL_SCANCODE_LEFT]) player->rotate(-90 * seconds_elapsed, Vector3(0, 1, 0));
+		if (keystate[SDL_SCANCODE_D] || keystate[SDL_SCANCODE_RIGHT]) player->rotate(90 * seconds_elapsed, Vector3(0, 1, 0));
+		if (keystate[SDL_SCANCODE_Q] ) player->rotate(-90 * seconds_elapsed * 0.5, Vector3(0, 0, 1));
+		if (keystate[SDL_SCANCODE_E] ) player->rotate(90 * seconds_elapsed * 0.5, Vector3(0, 0, 1));
+		
+
+		if ((mouse_state & SDL_BUTTON_LEFT) || mouse_locked) //is left button pressed?
+		{
+			player->rotate(mouse_delta.x * 0.03, Vector3(0, 0, 1));
+			player->rotate(mouse_delta.y * -0.03, Vector3(1, 0, 0));
+		}
+
+		if (keystate[SDL_SCANCODE_F]) player->shoot();
+	
+		
 	}
 
-	//async input to move the camera around
-	if(keystate[SDL_SCANCODE_LSHIFT]) speed *= 10; //move faster with left shift
-	if (keystate[SDL_SCANCODE_W] || keystate[SDL_SCANCODE_UP]) camera->move(Vector3(0,0,1) * speed);
-	if (keystate[SDL_SCANCODE_S] || keystate[SDL_SCANCODE_DOWN]) camera->move(Vector3(0,0,-1) * speed);
-	if (keystate[SDL_SCANCODE_A] || keystate[SDL_SCANCODE_LEFT]) camera->move(Vector3(1,0,0) * speed);
-	if (keystate[SDL_SCANCODE_D] || keystate[SDL_SCANCODE_RIGHT]) camera->move(Vector3(-1,0,0) * speed);
-    
-	//to navigate with the mouse fixed in the middle
+	Matrix44 global_player_matrix = player->getGlobalMatrix();
+	player_camera->lookAt(global_player_matrix * Vector3(0, 2, -5), global_player_matrix * Vector3(0, 0, 20), global_player_matrix.rotateVector(Vector3(0, 1, 0)));
+	//player->updateCamera(player_camera);
+
+
 	if (mouse_locked)
 	{
 		int center_x = floor(window_width*0.5);
@@ -291,6 +287,11 @@ void Game::onKeyPressed( SDL_KeyboardEvent event )
 	switch(event.keysym.sym)
 	{
 		case SDLK_ESCAPE: exit(0); //ESC key, kill the app
+		case SDLK_TAB:
+			time_scale = 0.01;
+			free_camera->lookAt(current_camera->eye, current_camera->center, current_camera->up);
+			current_camera = free_camera;
+
 	}
 }
 
@@ -318,7 +319,7 @@ void Game::setWindowSize(int width, int height)
 	*/
 
 	glViewport( 0,0, width, height );
-	camera->aspect =  width / (float)height;
+	free_camera->aspect =  width / (float)height;
 	window_width = width;
 	window_height = height;
 }
