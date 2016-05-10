@@ -79,6 +79,14 @@ void Game::init(void)
 	player = (Fighter*)world->createEntity(Vector3(0, 1000, 0));
 	world->root->addChildren(player);
 
+
+	//Test 
+	EntityMesh* test = new EntityMesh();
+	/*test->setup("data/meshes/LEGOFalcon.obj");	
+	test->local_matrix.setTranslation(0, 1000, 100);
+	test->mesh->colors.push_back( Vector4(0, 0, 0.3, 0));
+	world->root->addChildren(test);*/
+
 	player_camera = new Camera();
 	player_camera->setPerspective(70, window_width / (float)window_height, 0.1, 10000);
 	player_camera->lookAt(player->getGlobalMatrix() * Vector3(0, 2, -5), player->getGlobalMatrix() *  Vector3(0, 0, 20), Vector3(0, 1, 0));
