@@ -23,6 +23,7 @@ void BulletMaganer::createBullet(Vector3 pos, Vector3 vel, float ttl, void* owne
 			continue;
 
 		bullet.pos = pos;
+		bullet.last_pos = pos;
 		bullet.vel = vel;
 		bullet.ttl = ttl;
 		bullet.owner = owner;
@@ -39,6 +40,7 @@ void BulletMaganer::render(Camera* camera)
 		Bullet& bullet = bullets[i];
 		if (bullet.ttl <= 0)
 			continue;
+
 		mesh.vertices.push_back(bullet.last_pos);
 		mesh.vertices.push_back(bullet.pos);
 		mesh.colors.push_back(Vector4(0, 0, 0, 1));
@@ -58,8 +60,9 @@ void BulletMaganer::update(float dt)
 	for (int i = 0; i < MAX_BULLETS; i++) {
 
 		Bullet& bullet = bullets[i];
-		if (bullet.ttl < 0)
+		if (bullet.ttl <= 0)
 			continue;
+
 		bullet.last_pos = bullet.pos;
 		bullet.pos = bullet.pos + bullet.vel * dt;
 		bullet.ttl -= dt;

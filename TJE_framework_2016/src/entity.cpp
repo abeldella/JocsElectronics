@@ -47,7 +47,8 @@ void Entity::move(Vector3 v)
 
 void Entity::rotate(float angle_in_deg, Vector3 v)
 {
-	local_matrix.rotate(angle_in_deg * DEG2RAD, v);
+
+	local_matrix.rotateLocal(angle_in_deg * DEG2RAD, v);
 }
 
 
@@ -172,8 +173,9 @@ void Fighter::shoot()
 	Matrix44 global_matrix = getGlobalMatrix();
 	//Falta tener en cuenta la velocidad del avion
 	Vector3 vel = global_matrix.rotateVector(Vector3(0, 0, 1000));
-	Vector3 pos = global_matrix * Vector3(1.5, 0, -1.5);
+	Vector3 pos = global_matrix * Vector3(2.1, -0.55, 0.6);
+
 	bulletMng->createBullet(pos, vel, MAX_TTL, this);
-	pos = global_matrix * Vector3(-1.5, 0, -1.5);
+	pos = global_matrix * Vector3(-2.1, -0.55, 0.6);
 	bulletMng->createBullet(pos, vel, MAX_TTL, this);
 }
