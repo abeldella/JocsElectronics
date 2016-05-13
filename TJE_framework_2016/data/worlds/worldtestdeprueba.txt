@@ -1,9 +1,0 @@
-
-
-*SCENE_NUMOBJECTS 10
-	*NUMOBJECT	3	spitfire
-		id 		1
-		mesh		spitfire.ASE
-		lod_mesh	spitfire_low.ASE	
-		texture	spitfire_color_spec.TGA
-		shader		simple.fs

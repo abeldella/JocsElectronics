@@ -587,6 +587,23 @@ bool Mesh::loadOBJ(const char* filename)
 		}
 	}
 
+	Vector3 max = Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+	Vector3 min = Vector3(FLT_MAX, FLT_MAX, FLT_MAX);
+
+	for (int i = 0; i < vertices.size(); i++) {
+		Vector3 v = vertices[i];
+		if (v.x > max.x) { max.x = v.x; }
+		if (v.y > max.y) { max.y = v.y; }
+		if (v.z > max.z) { max.z = v.z; }
+		if (v.x < min.x) { min.x = v.x; }
+		if (v.y < min.y) { min.y = v.y; }
+		if (v.z < min.z) { min.z = v.z; }
+	}
+
+	center = (max + min) * 0.5;
+	halfSize = max - center;
+	std::cout << "halfSize = " << halfSize.length() << std::endl;
+
 	writeBIN(bin_filename.c_str());
 	return true;
 }

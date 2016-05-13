@@ -226,10 +226,7 @@ void Game::update(double seconds_elapsed)
 {
 	world->root->update(seconds_elapsed * time_scale);
 	bulletMng->update(seconds_elapsed * time_scale);
-
 	double speed = seconds_elapsed * 100; //the speed is defined by the seconds_elapsed so it goes constant
-
-	Matrix44 global_player_matrix;
 
 	if (current_camera == free_camera) {
 
@@ -256,14 +253,14 @@ void Game::update(double seconds_elapsed)
 		if (keystate[SDL_SCANCODE_S] || keystate[SDL_SCANCODE_DOWN]) player->rotate(90 * seconds_elapsed, Vector3(1, 0, 0));
 		if (keystate[SDL_SCANCODE_A] || keystate[SDL_SCANCODE_LEFT]) player->rotate(-90 * seconds_elapsed, Vector3(0, 1, 0));
 		if (keystate[SDL_SCANCODE_D] || keystate[SDL_SCANCODE_RIGHT]) player->rotate(90 * seconds_elapsed, Vector3(0, 1, 0));
-		if (keystate[SDL_SCANCODE_Q] ) player->rotate(-90 * seconds_elapsed * 0.5, Vector3(0, 0, 1));
+		if (keystate[SDL_SCANCODE_Q] ) player->rotate(90 * seconds_elapsed * 0.5, Vector3(0, 0, -1));
 		if (keystate[SDL_SCANCODE_E] ) player->rotate(90 * seconds_elapsed * 0.5, Vector3(0, 0, 1));
 		
 
 		if ((mouse_state & SDL_BUTTON_LEFT) || mouse_locked) //is left button pressed?
 		{
-			player->rotate(mouse_delta.x * 0.3, Vector3(0, 0, 1));
-			player->rotate(mouse_delta.y * -0.3, Vector3(1, 0, 0));
+			player->rotate(mouse_delta.x * 0.03, Vector3(0, 0, 1));
+			player->rotate(mouse_delta.y * -0.03, Vector3(1, 0, 0));
 		}
 
 		if (keystate[SDL_SCANCODE_F]) player->shoot();
@@ -271,7 +268,7 @@ void Game::update(double seconds_elapsed)
 		
 	}
 
-	global_player_matrix = player->getGlobalMatrix();
+	Matrix44 global_player_matrix = player->getGlobalMatrix();
 	player_camera->lookAt(global_player_matrix * Vector3(0, 2, -5), global_player_matrix * Vector3(0, 0, 20), global_player_matrix.rotateVector(Vector3(0, 1, 0)));
 	//player->updateCamera(player_camera);
 
