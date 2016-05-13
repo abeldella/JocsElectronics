@@ -18,6 +18,7 @@ public:
 	Matrix44 local_matrix;
 	Matrix44 global_matrix;
 	std::vector<Entity*> children;
+	static std::vector<Entity*> to_destroy;
 	Entity* parent;
 
 	Entity();
@@ -31,6 +32,8 @@ public:
 	void rotate(float angle_in_deg, Vector3 v);
 
 	void addChildren(Entity* entity);
+	void removeChild(Entity * entity); //Desenlaza una entidad de su padre
+	void destroyChild(Entity * entity, float time); //Destruye una entidad y sus hijos
 
 	Matrix44 getGlobalMatrix() {
 		if (parent)

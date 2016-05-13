@@ -43,7 +43,7 @@ void BulletMaganer::render(Camera* camera)
 
 		mesh.vertices.push_back(bullet.last_pos);
 		mesh.vertices.push_back(bullet.pos);
-		mesh.colors.push_back(Vector4(0, 0, 0, 1));
+		mesh.colors.push_back(Vector4(0, 0, 0, 0));
 		mesh.colors.push_back(Vector4(1, 1, 0.3, 1));
 
 	}
@@ -52,7 +52,10 @@ void BulletMaganer::render(Camera* camera)
 		return;
 
 	glLineWidth(3);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	mesh.render(GL_LINES);
+	glDisable(GL_BLEND);
 }
 
 void BulletMaganer::update(float dt)

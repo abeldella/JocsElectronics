@@ -20,8 +20,8 @@ public:
 		return instance;
 	}
 
-	Entity* root = NULL;
-	EntityMesh* skybox = NULL;
+	Entity* root;
+	EntityMesh* skybox;
 	std::vector< Entity* > entities;
 
 	//Metodos para cmabiar la textura de skybox ej. Cambia a noche.

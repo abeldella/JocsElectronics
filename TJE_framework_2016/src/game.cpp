@@ -5,20 +5,15 @@
 #include "rendertotexture.h"
 #include "shader.h"
 #include "entity.h"
-#include "world.h"
-#include "bullets.h"
 #include <cmath>
 
 //some globals
-Entity* root = NULL;
-float angle = 0;
+//float angle = 0;
 RenderToTexture* rt = NULL;
 Game* Game::instance = NULL;
 
-BulletMaganer* bulletMng;
-World* world = NULL;
+
 Fighter* player;
-float time_scale = 1.0;
 
 Game::Game(SDL_Window* window)
 {
@@ -31,15 +26,19 @@ Game::Game(SDL_Window* window)
 	SDL_GetWindowSize( window, &window_width, &window_height );
 	std::cout << " * Window size: " << window_width << " x " << window_height << std::endl;
 
+	
 	keystate = NULL;
 	mouse_locked = false;
+	world = NULL;
+	bulletMng = NULL;
 }
 
 //Here we have already GL working, so we can create meshes and textures
 void Game::init(void)
 {
     std::cout << " * Path: " << getPath() << std::endl;
-    
+	time_scale = 1.0;
+
 	//Scene inicialization 
 	world = World::getInstance();
 	world->root = new Entity();
@@ -54,7 +53,6 @@ void Game::init(void)
 	TextureManager* textureMng = TextureManager::getInstance();
 	MeshManager* meshMng = MeshManager::getInstance();
 	bulletMng = BulletMaganer::getInstance();
-	//ShaderManager* shaderMng = ShaderManager::getInstance();
 
 	//create our camera
 	free_camera = new Camera();
@@ -62,15 +60,9 @@ void Game::init(void)
 	free_camera->setPerspective(70,window_width/(float)window_height,0.1,10000); //set the projection, we want to be perspective
 	current_camera = free_camera;
 
-	/*world->createSkybox();
-	world->createPlane();
-	world->createTerrain();*/
 	world->factory("data/worlds/world_test.txt");
 
 	//Cargamos Meshes
-	//long t1 = getTime();
-	//long t2 = getTime();
-	//std::cout << "Mesh load time : " << ((t2 - t1)*0.001) << "s" << std::endl;
 	/*Shader* fog_shader = Shader::load("data/shaders/fog.vs", "data/.-------");
 	fog_shader->enable();
 	fog_shader->setVector3("u_fog_color", fog_color);*/
@@ -79,20 +71,10 @@ void Game::init(void)
 	player = (Fighter*)world->createEntity(Vector3(0, 1000, 0));
 	world->root->addChildren(player);
 
-
-	//Test 
-	EntityMesh* test = new EntityMesh();
-	/*test->setup("data/meshes/LEGOFalcon.obj");	
-	test->local_matrix.setTranslation(0, 1000, 100);
-	test->mesh->colors.push_back( Vector4(0, 0, 0.3, 0));
-	world->root->addChildren(test);*/
-
 	player_camera = new Camera();
 	player_camera->setPerspective(70, window_width / (float)window_height, 0.1, 10000);
 	player_camera->lookAt(player->getGlobalMatrix() * Vector3(0, 2, -5), player->getGlobalMatrix() *  Vector3(0, 0, 20), Vector3(0, 1, 0));
 	current_camera = player_camera;
-
-
 
 	/*	Codigo para composición de meshes, por ejemplo avion con misil.
 		if (prev_entity) {
@@ -109,8 +91,6 @@ void Game::init(void)
 		std::cout << "shader not found or error" << std::endl;
 		exit(0);
 	}*/
-
-	
 
 	//hide the cursor
 	SDL_ShowCursor(!mouse_locked); //hide or show the mouse
@@ -154,57 +134,8 @@ void Game::render(void)
 	*/
 
 	//Draw out world
-	//drawGrid(500); //background gridx
 	world->root->render(current_camera);
 	bulletMng->render(current_camera);
-    
-	/*//create model matrix from plane
-	Matrix44 m;
-    m.setScale(1,1,1);
-	//m.rotate(angle * DEG2RAD, Vector3(0,1,0) ); //build a rotation matrix
-
-	//draw the plane
-	if(0) //render using shader
-	{
-	    Matrix44 mvp = m * camera->viewprojection_matrix;
-
-		shader->enable();
-		shader->setMatrix44("u_model", m );
-		shader->setMatrix44("u_mvp", mvp );
-   
-		mesh->render(GL_TRIANGLES, shader);
-		shader->disable();
-	}
-	else //render using fixed pipeline (DEPRECATED)
-	{
-		glPushMatrix();
-		m.multGL();
-		texture->bind();
-		mesh->render(GL_TRIANGLES);
-		texture->unbind();
-		glPopMatrix();
-		float render_halfSize;
-		for (int j = -50; j < 50; j++) {
-			for (int i = -50; i < 50; i++) {
-				Vector3 pos(i * 10, j * 10, 0);
-				m.setTranslation(pos.x, pos.y, pos.z);
-				Mesh * render_mesh = mesh;
-				if (pos.distance(camera->eye) > 30) {
-					render_mesh = mesh_low;
-				}
-				render_halfSize = render_mesh->halfSize.length();
-				glPushMatrix();
-				m.multGL();
-				texture->bind();
-				if (camera->testSphereInFrustum(pos + mesh->center, render_halfSize)) {
-					render_mesh->render(GL_TRIANGLES);
-				}
-				texture->unbind();
-				glPopMatrix();
-			}
-		}
-	}*/
-
     
     glDisable( GL_BLEND );
 
@@ -214,9 +145,7 @@ void Game::render(void)
 		this->fps = fps;
 	drawText(2, 2, std::string("FPS: ") + std::to_string(int(this->fps)), this->fps > 30 ? Vector3(1, 1, 1) : Vector3(1, 0, 0), 2);
 	drawText(2, 20, std::string("DIPs: ") + std::to_string(Mesh::s_num_meshes_rendered), this->fps > 30 ? Vector3(1, 1, 1) : Vector3(1, 0, 0), 2);
-	last = getTime();
-	Mesh::s_num_meshes_rendered = 0;*/
-
+	last = getTime();*/
 
 	//swap between front buffer and back buffer
 	SDL_GL_SwapWindow(this->window);
@@ -286,7 +215,10 @@ void Game::update(double seconds_elapsed)
 	}
     
 
-	angle += seconds_elapsed * 10;
+	//angle += seconds_elapsed * 10;
+	/*
+		ELIMINAR DE ENTITY TODAS LAS ENTIDADES DEL VECTOR to_destroy
+	*/
 }
 
 //Keyboard event handler (sync input)
@@ -296,10 +228,15 @@ void Game::onKeyPressed( SDL_KeyboardEvent event )
 	{
 		case SDLK_ESCAPE: exit(0); //ESC key, kill the app
 		case SDLK_TAB:
-			time_scale = 0.01;
-			free_camera->lookAt(current_camera->eye, current_camera->center, current_camera->up);
-			current_camera = free_camera;
-
+			if (time_scale == 1.0) {
+				time_scale = 0.01;
+				free_camera->lookAt(current_camera->eye, current_camera->center, current_camera->up);
+				current_camera = free_camera;
+			}
+			else {
+				time_scale = 1.0;
+				current_camera = player_camera;
+			}
 	}
 }
 

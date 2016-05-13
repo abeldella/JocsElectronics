@@ -15,7 +15,18 @@ Entity::~Entity()
 {
 	std::cout << "Entity destroyed" << std::endl;
 	//To do 
-	//Avisar al padre para que borre este hijo
+	//Al destruir la entidad eliminamos todos sus hijos
+	std::vector<Entity*>::iterator it;
+	for (it = children.begin(); it != children.end(); it++) {
+		delete(*it);
+	}
+}
+
+void removeChild(Entity * entity) {
+
+}
+
+void destroyChild(Entity * entity, float time) {
 
 }
 
