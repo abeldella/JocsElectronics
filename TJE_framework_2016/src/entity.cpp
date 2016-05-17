@@ -4,6 +4,7 @@
 #include "mesh.h"
 #include "texture.h"
 #include "bullets.h"
+#include "game.h"
 
 Entity::Entity() 
 {
@@ -157,6 +158,7 @@ void EntityMesh::setup(const char* mesh, const char* texture, const char* lod_me
 Fighter::Fighter()
 {
 	speed = 1;	
+	camera_info.set(0, 0, 0);
 }
 
 void Fighter::update(float dt)
@@ -185,8 +187,28 @@ void Fighter::shoot()
 	//Falta tener en cuenta la velocidad del avion
 	Vector3 vel = global_matrix.rotateVector(Vector3(0, 0, 1000));
 	Vector3 pos = global_matrix * Vector3(2.1, -0.55, 0.6);
-
+	pos = pos + velocity ;
 	bulletMng->createBullet(pos, vel, MAX_TTL, this);
 	pos = global_matrix * Vector3(-2.1, -0.55, 0.6);
+	pos = pos + velocity;
 	bulletMng->createBullet(pos, vel, MAX_TTL, this);
+}
+
+Vector3 Fighter::getCameraEye()
+{
+	return camera_info;
+}
+
+//ESTA FUNCION DEBE DE IR EN EL CONTROLLER
+void Fighter::updateCamera(Camera* camera)
+{
+	Matrix44 rot;
+	rot.rotateLocal(camera_info.x * 2.0, Vector3(0, 1, 0));
+	Matrix44 global = getGlobalMatrix();
+	Vector3 eye = global * (rot * Vector3(0, 2, -5));
+	Vector3 center = global * (rot * Vector3(0, 0, 10));
+	Vector3 up = global.rotateVector(Vector3(0, 1, 0));
+
+	camera->setPerspective(70 + camera_info.z * 20, Game::instance->window_width / (float)Game::instance->window_height, 0.1, 10000);
+	camera->lookAt(eye, center, up);
 }

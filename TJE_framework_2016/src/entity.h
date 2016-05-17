@@ -73,12 +73,17 @@ class Fighter : public EntityMesh
 public:
 	float speed;
 	Vector3 velocity;
-	Vector3 camera_eye;
+	Vector3 camera_info;
 
 	Fighter();
 
 	void update(float dt);
 	void shoot();
+	void updateCamera(Camera* camera);
+
+	Vector3 getCameraEye();
+
+
 };
 
 

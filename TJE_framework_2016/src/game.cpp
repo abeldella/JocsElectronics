@@ -12,8 +12,7 @@
 RenderToTexture* rt = NULL;
 Game* Game::instance = NULL;
 
-
-Fighter* player;
+SDL_Joystick* pad = NULL;
 
 Game::Game(SDL_Window* window)
 {
@@ -43,6 +42,7 @@ void Game::init(void)
 	world = World::getInstance();
 	world->root = new Entity();
 
+	ctrlPlayer = new Controller();
     //SDL_SetWindowSize(window, 50,50);
 
 	//OpenGL flags
@@ -75,6 +75,9 @@ void Game::init(void)
 	player_camera->setPerspective(70, window_width / (float)window_height, 0.1, 10000);
 	player_camera->lookAt(player->getGlobalMatrix() * Vector3(0, 2, -5), player->getGlobalMatrix() *  Vector3(0, 0, 20), Vector3(0, 1, 0));
 	current_camera = player_camera;
+	
+	//Llamar controller->pad si no hay pad devuelve un null
+	pad = openJoystick(0);
 
 	/*	Codigo para composición de meshes, por ejemplo avion con misil.
 		if (prev_entity) {
@@ -157,6 +160,9 @@ void Game::update(double seconds_elapsed)
 	bulletMng->update(seconds_elapsed * time_scale);
 	double speed = seconds_elapsed * 100; //the speed is defined by the seconds_elapsed so it goes constant
 
+
+	//ctrlPlayer->update(seconds_elapsed);
+
 	if (current_camera == free_camera) {
 
 		//mouse input to rotate the cam
@@ -186,6 +192,41 @@ void Game::update(double seconds_elapsed)
 		if (keystate[SDL_SCANCODE_E] ) player->rotate(90 * seconds_elapsed * 0.5, Vector3(0, 0, 1));
 		
 
+		if (pad) {
+			JoystickState pad_state = getJoystickState(pad);
+			
+			if (abs(pad_state.axis[LEFT_ANALOG_Y]) > 0.1)
+				player->rotate(90 * pad_state.axis[LEFT_ANALOG_Y] * seconds_elapsed, Vector3(1, 0, 0));
+			if (abs(pad_state.axis[LEFT_ANALOG_X]) > 0.1)
+				player->rotate(-90 * pad_state.axis[LEFT_ANALOG_X] * seconds_elapsed, Vector3(0, 0, 1));
+
+			if (abs(pad_state.axis[RIGHT_ANALOG_X]) > 0.1)
+				player->camera_info.x = pad_state.axis[RIGHT_ANALOG_X];
+			else
+				player->camera_info.x = 0;
+
+			if (abs(pad_state.axis[RIGHT_ANALOG_Y]) > 0.1)
+				player->camera_info.z = pad_state.axis[RIGHT_ANALOG_Y];
+			else player->camera_info.z = 0;
+
+			if (pad_state.button[LB_BUTTON])
+			{
+				std::cout << "lb " << pad_state.button[LB_BUTTON] << std::endl;
+				player->shoot();
+			}
+
+
+			/*VERSION CON TRIGGERS
+			if (pad_state.axis[TRIGGERS] > -0.1)
+			{				
+				std::cout << "trigger " << pad_state.axis[TRIGGERS] << std::endl;
+				player->camera_info.z = -1.0 * pad_state.axis[TRIGGERS];
+			}else player->camera_info.z = 0;*/
+
+			
+		}
+
+
 		if ((mouse_state & SDL_BUTTON_LEFT) || mouse_locked) //is left button pressed?
 		{
 			player->rotate(mouse_delta.x * 0.03, Vector3(0, 0, 1));
@@ -198,8 +239,8 @@ void Game::update(double seconds_elapsed)
 	}
 
 	Matrix44 global_player_matrix = player->getGlobalMatrix();
-	player_camera->lookAt(global_player_matrix * Vector3(0, 2, -5), global_player_matrix * Vector3(0, 0, 20), global_player_matrix.rotateVector(Vector3(0, 1, 0)));
-	//player->updateCamera(player_camera);
+	//player_camera->lookAt(global_player_matrix * Vector3(0, 2, -5), global_player_matrix * Vector3(0, 0, 20), global_player_matrix.rotateVector(Vector3(0, 1, 0)));
+	player->updateCamera(player_camera);
 
 
 	if (mouse_locked)

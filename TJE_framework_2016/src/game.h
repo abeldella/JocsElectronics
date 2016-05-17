@@ -9,6 +9,7 @@
 #include "camera.h"
 #include "bullets.h"
 #include "world.h"
+#include "controller.h"
 
 class Game
 {
@@ -50,6 +51,9 @@ public:
 	BulletMaganer* bulletMng;
 
 	float time_scale;
+
+	Fighter* player;
+	Controller* ctrlPlayer;
 };
 
 
