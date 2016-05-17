@@ -209,12 +209,11 @@ void Game::update(double seconds_elapsed)
 				player->camera_info.z = pad_state.axis[RIGHT_ANALOG_Y];
 			else player->camera_info.z = 0;
 
-			if (pad_state.button[LB_BUTTON])
+			if (pad_state.button[RIGHT_ANALOG_BUTTON])
 			{
-				std::cout << "lb " << pad_state.button[LB_BUTTON] << std::endl;
+				std::cout << "R1 " << std::endl;
 				player->shoot();
 			}
-
 
 			/*VERSION CON TRIGGERS
 			if (pad_state.axis[TRIGGERS] > -0.1)

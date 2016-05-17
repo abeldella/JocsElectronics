@@ -41,16 +41,20 @@ enum XBOXpad
 	TRIGGERS = 4, //both triggers share an axis (positive is right, negative is left trigger)
 
 	//buttons
-	A_BUTTON = 0,
-	B_BUTTON = 1,
-	X_BUTTON = 2,
-	Y_BUTTON = 3,
-	LB_BUTTON = 7,
-	RB_BUTTON = 6,
-	BACK_BUTTON = 5,
+	UP_BUTTON = 0,
+	DOWN_BUTTON = 1,
+	LEFT_BUTTON = 2,
+	RIGHT_BUTTON = 3,
 	START_BUTTON = 4,
+	BACK_BUTTON = 5,
+	LB_BUTTON = 6,
+	RB_BUTTON = 7,
 	LEFT_ANALOG_BUTTON = 8,
-	RIGHT_ANALOG_BUTTON = 9
+	RIGHT_ANALOG_BUTTON = 9,
+	A_BUTTON = 10,
+	B_BUTTON = 11,
+	X_BUTTON = 12,
+	Y_BUTTON = 13
 };
 
 enum HATState
