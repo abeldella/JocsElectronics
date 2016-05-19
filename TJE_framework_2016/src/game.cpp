@@ -20,12 +20,12 @@ Game::Game(SDL_Window* window)
 	instance = this;
 
 	// initialize attributes
-	// Warning: DO NOT CREATE STUFF HERE, USE THE INIT 
+	// Warning: DO NOT CREATE STUFF HERE, USE THE INIT
 	// things create here cannot access opengl
 	SDL_GetWindowSize( window, &window_width, &window_height );
 	std::cout << " * Window size: " << window_width << " x " << window_height << std::endl;
 
-	
+
 	keystate = NULL;
 	mouse_locked = false;
 	world = NULL;
@@ -38,11 +38,12 @@ void Game::init(void)
     std::cout << " * Path: " << getPath() << std::endl;
 	time_scale = 1.0;
 
-	//Scene inicialization 
+	//Scene inicialization
 	world = World::getInstance();
 	world->root = new Entity();
 
-	ctrlPlayer = new Controller();
+
+	pad = openJoystick(0);
     //SDL_SetWindowSize(window, 50,50);
 
 	//OpenGL flags
@@ -74,10 +75,30 @@ void Game::init(void)
 	player_camera = new Camera();
 	player_camera->setPerspective(70, window_width / (float)window_height, 0.1, 10000);
 	player_camera->lookAt(player->getGlobalMatrix() * Vector3(0, 2, -5), player->getGlobalMatrix() *  Vector3(0, 0, 20), Vector3(0, 1, 0));
-	current_camera = player_camera;
 	
-	//Llamar controller->pad si no hay pad devuelve un null
-	pad = openJoystick(0);
+
+
+	ctrlPlayer = new Controller();
+	ctrlPlayer->target = player;
+	ctrlPlayer->pad = pad;
+
+	ctrlPlayer->camera = player_camera;
+	current_camera = ctrlPlayer->getCamera();
+	//current_camera = free_camera;
+
+	Mesh* test = new Mesh();
+	test->createPlane(10000);
+
+	EntityMesh* et = new EntityMesh();
+	et->mesh = test;
+	et->texture = textureMng->getTexture("data/TilesPlain0136_1_S.TGA");
+	et->two_sided = true;
+	et->local_matrix.setTranslation(0,0,0);
+	world->root->addChildren(et);
+
+
+	//((EntityMesh*)test)->texture = textureMng->getTexture("data/floor.tga");
+
 
 	/*	Codigo para composición de meshes, por ejemplo avion con misil.
 		if (prev_entity) {
@@ -102,6 +123,10 @@ void Game::init(void)
 //what to do when the image has to be draw
 void Game::render(void)
 {
+
+	//current_camera = ctrlPlayer->getCamera();
+
+
 	glClearColor(1.0, 0.0, 0.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -119,7 +144,7 @@ void Game::render(void)
 	world->skybox->local_matrix.setTranslation(current_camera->eye.x, current_camera->eye.y, current_camera->eye.z);
 	world->skybox->render(current_camera);
 	glEnable(GL_DEPTH_TEST);
-	
+
 
 	/*Hack de la camara para el ejemplo del planeta lejano creo que serviria para el ejemplo de la cabina
 	Camera camera2;
@@ -128,7 +153,7 @@ void Game::render(void)
 	camera2.set();		//Cambiar las camaras en opengl
 	planet->render( &camera2 );
 	camera->set();		//Volvemos a la camara inicial
-	
+
 	Lo mismo con el skybox_root (Entity) - Podemos poner un rotation en update()
 	skybox_root->local_matrix.setTranslation(camera->eye.x, camera->eye.y, camera->eye.z);
 	skybox_root->render(camera);
@@ -139,7 +164,7 @@ void Game::render(void)
 	//Draw out world
 	world->root->render(current_camera);
 	bulletMng->render(current_camera);
-    
+
     glDisable( GL_BLEND );
 
 	/*float time_per_frame = (getTime() - last);
@@ -158,10 +183,11 @@ void Game::update(double seconds_elapsed)
 {
 	world->root->update(seconds_elapsed * time_scale);
 	bulletMng->update(seconds_elapsed * time_scale);
+	ctrlPlayer->update(seconds_elapsed * time_scale);
+
+
 	double speed = seconds_elapsed * 100; //the speed is defined by the seconds_elapsed so it goes constant
 
-
-	//ctrlPlayer->update(seconds_elapsed);
 
 	if (current_camera == free_camera) {
 
@@ -174,72 +200,13 @@ void Game::update(double seconds_elapsed)
 
 		//async input to move the camera around
 		if (keystate[SDL_SCANCODE_LSHIFT]) speed *= 10; //move faster with left shift
+		if (keystate[SDL_SCANCODE_LCTRL]) speed *= 0.1; //move slower with left ctrl
 		if (keystate[SDL_SCANCODE_W] || keystate[SDL_SCANCODE_UP]) current_camera->move(Vector3(0, 0, 1) * speed);
 		if (keystate[SDL_SCANCODE_S] || keystate[SDL_SCANCODE_DOWN]) current_camera->move(Vector3(0, 0, -1) * speed);
 		if (keystate[SDL_SCANCODE_A] || keystate[SDL_SCANCODE_LEFT]) current_camera->move(Vector3(1, 0, 0) * speed);
 		if (keystate[SDL_SCANCODE_D] || keystate[SDL_SCANCODE_RIGHT]) current_camera->move(Vector3(-1, 0, 0) * speed);
-
-		//to navigate with the mouse fixed in the middle
-	}
-	else if(current_camera == player_camera){
-
-
-		if (keystate[SDL_SCANCODE_W] || keystate[SDL_SCANCODE_UP]) player->rotate(-90 * seconds_elapsed, Vector3(1,0,0));
-		if (keystate[SDL_SCANCODE_S] || keystate[SDL_SCANCODE_DOWN]) player->rotate(90 * seconds_elapsed, Vector3(1, 0, 0));
-		if (keystate[SDL_SCANCODE_A] || keystate[SDL_SCANCODE_LEFT]) player->rotate(-90 * seconds_elapsed, Vector3(0, 1, 0));
-		if (keystate[SDL_SCANCODE_D] || keystate[SDL_SCANCODE_RIGHT]) player->rotate(90 * seconds_elapsed, Vector3(0, 1, 0));
-		if (keystate[SDL_SCANCODE_Q] ) player->rotate(90 * seconds_elapsed * 0.5, Vector3(0, 0, -1));
-		if (keystate[SDL_SCANCODE_E] ) player->rotate(90 * seconds_elapsed * 0.5, Vector3(0, 0, 1));
-		
-
-		if (pad) {
-			JoystickState pad_state = getJoystickState(pad);
-			
-			if (abs(pad_state.axis[LEFT_ANALOG_Y]) > 0.1)
-				player->rotate(90 * pad_state.axis[LEFT_ANALOG_Y] * seconds_elapsed, Vector3(1, 0, 0));
-			if (abs(pad_state.axis[LEFT_ANALOG_X]) > 0.1)
-				player->rotate(-90 * pad_state.axis[LEFT_ANALOG_X] * seconds_elapsed, Vector3(0, 0, 1));
-
-			if (abs(pad_state.axis[RIGHT_ANALOG_X]) > 0.1)
-				player->camera_info.x = pad_state.axis[RIGHT_ANALOG_X];
-			else
-				player->camera_info.x = 0;
-
-			if (abs(pad_state.axis[RIGHT_ANALOG_Y]) > 0.1)
-				player->camera_info.z = pad_state.axis[RIGHT_ANALOG_Y];
-			else player->camera_info.z = 0;
-
-			if (pad_state.button[RIGHT_ANALOG_BUTTON])
-			{
-				std::cout << "R1 " << std::endl;
-				player->shoot();
-			}
-
-			/*VERSION CON TRIGGERS
-			if (pad_state.axis[TRIGGERS] > -0.1)
-			{				
-				std::cout << "trigger " << pad_state.axis[TRIGGERS] << std::endl;
-				player->camera_info.z = -1.0 * pad_state.axis[TRIGGERS];
-			}else player->camera_info.z = 0;*/
-
-			
-		}
-
-
-		if ((mouse_state & SDL_BUTTON_LEFT) || mouse_locked) //is left button pressed?
-		{
-			player->rotate(mouse_delta.x * 0.03, Vector3(0, 0, 1));
-			player->rotate(mouse_delta.y * -0.03, Vector3(1, 0, 0));
-		}
-
-		if (keystate[SDL_SCANCODE_F]) player->shoot();
-	
-		
 	}
 
-	Matrix44 global_player_matrix = player->getGlobalMatrix();
-	//player_camera->lookAt(global_player_matrix * Vector3(0, 2, -5), global_player_matrix * Vector3(0, 0, 20), global_player_matrix.rotateVector(Vector3(0, 1, 0)));
-	player->updateCamera(player_camera);
 
 
 	if (mouse_locked)
@@ -249,13 +216,11 @@ void Game::update(double seconds_elapsed)
         //center_x = center_y = 50;
 		SDL_WarpMouseInWindow(this->window, center_x, center_y); //put the mouse back in the middle of the screen
 		//SDL_WarpMouseGlobal(center_x, center_y); //put the mouse back in the middle of the screen
-        
+
         this->mouse_position.x = center_x;
         this->mouse_position.y = center_y;
 	}
-    
 
-	//angle += seconds_elapsed * 10;
 	/*
 		ELIMINAR DE ENTITY TODAS LAS ENTIDADES DEL VECTOR to_destroy
 	*/
@@ -272,10 +237,12 @@ void Game::onKeyPressed( SDL_KeyboardEvent event )
 				time_scale = 0.01;
 				free_camera->lookAt(current_camera->eye, current_camera->center, current_camera->up);
 				current_camera = free_camera;
+				ctrlPlayer->active = false;
 			}
 			else {
 				time_scale = 1.0;
-				current_camera = player_camera;
+				current_camera = ctrlPlayer->camera;
+				ctrlPlayer->active = true;
 			}
 	}
 }
@@ -293,7 +260,7 @@ void Game::onMouseButton( SDL_MouseButtonEvent event )
 void Game::setWindowSize(int width, int height)
 {
     std::cout << "window resized: " << width << "," << height << std::endl;
-    
+
 	/*
     Uint32 flags = SDL_GetWindowFlags(window);
     if(flags & SDL_WINDOW_ALLOW_HIGHDPI)

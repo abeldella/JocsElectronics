@@ -5,58 +5,79 @@
 
 Controller::Controller()
 {
-	keystate = NULL;
-	mouse_locked = false;
+/*	target = NULL;
+	pad = NULL;
+	camera = NULL;
+	keystate = NULL;*/
+	/*mouse_locked = false;*/
+	active = true;
 }
-
-void Controller::update(double dt)
+Controller::~Controller()
 {
 
-	Camera* current_camera = Game::instance->current_camera;
-	Camera* free_camera = Game::instance->free_camera;
-	Camera* player_camera = Game::instance->player_camera;
-	double speed = dt * 100;
-	target = Game::instance->player;
+}
 
-	if (current_camera == free_camera) {
+void Controller::update(float dt)
+{
+	Fighter* player = (Fighter*)target;
+	Game* game = Game::instance;
+	keystate = game->keystate;
 
-		//mouse input to rotate the cam
-		if ((mouse_state & SDL_BUTTON_LEFT) || mouse_locked) //is left button pressed?
+	if (active) {
+
+		if (keystate[SDL_SCANCODE_W] || keystate[SDL_SCANCODE_UP]) player->rotate(-90 * dt, Vector3(1, 0, 0));
+		if (keystate[SDL_SCANCODE_S] || keystate[SDL_SCANCODE_DOWN]) player->rotate(90 * dt, Vector3(1, 0, 0));
+		if (keystate[SDL_SCANCODE_A] || keystate[SDL_SCANCODE_LEFT]) player->rotate(-90 * dt, Vector3(0, 1, 0));
+		if (keystate[SDL_SCANCODE_D] || keystate[SDL_SCANCODE_RIGHT]) player->rotate(90 * dt, Vector3(0, 1, 0));
+		if (keystate[SDL_SCANCODE_Q]) player->rotate(90 * dt * 0.5, Vector3(0, 0, -1));
+		if (keystate[SDL_SCANCODE_E]) player->rotate(90 * dt * 0.5, Vector3(0, 0, 1));
+
+		if ((game->mouse_state & SDL_BUTTON_LEFT) || game->mouse_locked) //is left button pressed?
 		{
-			current_camera->rotate(mouse_delta.x * 0.005, Vector3(0, -1, 0));
-			current_camera->rotate(mouse_delta.y * 0.005, current_camera->getLocalVector(Vector3(-1, 0, 0)));
+			player->rotate(game->mouse_delta.x * 0.03, Vector3(0, 0, 1));
+			player->rotate(game->mouse_delta.y * -0.03, Vector3(1, 0, 0));
 		}
 
-		//async input to move the camera around
-		if (keystate[SDL_SCANCODE_LSHIFT]) speed *= 10; //move faster with left shift
-		if (keystate[SDL_SCANCODE_W] || keystate[SDL_SCANCODE_UP]) current_camera->move(Vector3(0, 0, 1) * speed);
-		if (keystate[SDL_SCANCODE_S] || keystate[SDL_SCANCODE_DOWN]) current_camera->move(Vector3(0, 0, -1) * speed);
-		if (keystate[SDL_SCANCODE_A] || keystate[SDL_SCANCODE_LEFT]) current_camera->move(Vector3(1, 0, 0) * speed);
-		if (keystate[SDL_SCANCODE_D] || keystate[SDL_SCANCODE_RIGHT]) current_camera->move(Vector3(-1, 0, 0) * speed);
-
-		//to navigate with the mouse fixed in the middle
+		//ACTIONS
+		if (keystate[SDL_SCANCODE_F]) player->shoot();
 	}
-	else if (current_camera == player_camera) {
+	//WITH XBOX CONTROLLER
+	if (pad) {
+		JoystickState pad_state = getJoystickState(pad);
 
+		if (abs(pad_state.axis[LEFT_ANALOG_Y]) > 0.1)
+			player->rotate(90 * pad_state.axis[LEFT_ANALOG_Y] * dt, Vector3(1, 0, 0));
+		if (abs(pad_state.axis[LEFT_ANALOG_X]) > 0.1)
+			player->rotate(-90 * pad_state.axis[LEFT_ANALOG_X] * dt, Vector3(0, 0, 1));
 
-		if (keystate[SDL_SCANCODE_W] || keystate[SDL_SCANCODE_UP]) target->rotate(-90 * dt, Vector3(1, 0, 0));
-		if (keystate[SDL_SCANCODE_S] || keystate[SDL_SCANCODE_DOWN]) target->rotate(90 * dt, Vector3(1, 0, 0));
-		if (keystate[SDL_SCANCODE_A] || keystate[SDL_SCANCODE_LEFT]) target->rotate(-90 * dt, Vector3(0, 1, 0));
-		if (keystate[SDL_SCANCODE_D] || keystate[SDL_SCANCODE_RIGHT]) target->rotate(90 * dt, Vector3(0, 1, 0));
-		if (keystate[SDL_SCANCODE_Q]) target->rotate(90 * dt * 0.5, Vector3(0, 0, -1));
-		if (keystate[SDL_SCANCODE_E]) target->rotate(90 * dt * 0.5, Vector3(0, 0, 1));
+		if (abs(pad_state.axis[RIGHT_ANALOG_X]) > 0.1) 
+			player->camera_info.x = pad_state.axis[RIGHT_ANALOG_X];
+		else
+			player->camera_info.x = 0;
 
+		if (abs(pad_state.axis[RIGHT_ANALOG_Y]) > 0.1) {
+			player->camera_info.z = pad_state.axis[RIGHT_ANALOG_Y];
+			std::cout << "RIGHT_ANALOG_Y " << pad_state.button[RIGHT_ANALOG_Y] << std::endl;
+		}
+		else player->camera_info.z = 0;
 
-		if ((mouse_state & SDL_BUTTON_LEFT) || mouse_locked) //is left button pressed?
+		if (pad_state.button[RIGHT_ANALOG_BUTTON])
 		{
-			target->rotate(mouse_delta.x * 0.03, Vector3(0, 0, 1));
-			target->rotate(mouse_delta.y * -0.03, Vector3(1, 0, 0));
+			std::cout << "RAB shooting " << pad_state.button[RIGHT_ANALOG_BUTTON] << std::endl;
+			player->shoot();
 		}
 
-		if (keystate[SDL_SCANCODE_F]) ((Fighter*)target)->shoot();
-
-
+		if (pad_state.button[BACK_BUTTON]) exit(0);
 	}
 
+	Matrix44 global_player_matrix = player->getGlobalMatrix();
+	//camera->lookAt(global_player_matrix * Vector3(0, 2, -5), global_player_matrix *  Vector3(0, 0, 20), global_player_matrix.rotateVector(Vector3(0, 1, 0)));
+	camera = getCamera();
+}
 
+Camera* Controller::getCamera()
+{
+	Fighter* fighter = (Fighter*)target;
+	fighter->updateCamera(camera);
+	return camera;
 }

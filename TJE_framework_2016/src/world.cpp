@@ -134,7 +134,12 @@ void World::createTerrain()
 	for (int i = -3; i <= 3; i++) {
 		for (int j = -3; j <= 3; j++) {
 			EntityMesh* island = new EntityMesh();
-			island->setup("data/meshes/island.ASE", "data/textures/island_color_luz.TGA");
+			
+			
+			//island->setup("data/meshes/island.ASE", "data/textures/island_color_luz.TGA");
+			Mesh* test = new Mesh();
+			test->createPlane(100);
+			island->mesh = test;
 			island->local_matrix.setTranslation( i*island->mesh->halfSize.x * 2, 0, j*island->mesh->halfSize.z);
 			//island->shader = fog_shader;
 			root->addChildren(island);
