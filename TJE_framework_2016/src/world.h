@@ -3,9 +3,7 @@
 
 #include "framework.h"
 #include <vector>
-
-class Entity;
-class EntityMesh;
+#include "entity.h"
 
 class World
 {
@@ -23,6 +21,9 @@ public:
 	Entity* root;
 	EntityMesh* skybox;
 	std::vector< Entity* > entities;
+
+	//Entidad boss para testear delete
+	Fighter* boss;
 
 	//Metodos para cmabiar la textura de skybox ej. Cambia a noche.
 

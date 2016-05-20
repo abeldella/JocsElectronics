@@ -12,8 +12,6 @@
 RenderToTexture* rt = NULL;
 Game* Game::instance = NULL;
 
-SDL_Joystick* pad = NULL;
-
 Game::Game(SDL_Window* window)
 {
 	this->window = window;
@@ -30,6 +28,7 @@ Game::Game(SDL_Window* window)
 	mouse_locked = false;
 	world = NULL;
 	bulletMng = NULL;
+	pad = NULL;
 }
 
 //Here we have already GL working, so we can create meshes and textures
@@ -86,16 +85,12 @@ void Game::init(void)
 	current_camera = ctrlPlayer->getCamera();
 	//current_camera = free_camera;
 
-	Mesh* test = new Mesh();
-	test->createPlane(10000);
 
-	EntityMesh* et = new EntityMesh();
-	et->mesh = test;
-	et->texture = textureMng->getTexture("data/TilesPlain0136_1_S.TGA");
-	et->two_sided = true;
-	et->local_matrix.setTranslation(0,0,0);
-	world->root->addChildren(et);
-
+	EntityMesh* bed = new EntityMesh();
+	bed->setup("data/Bed.obj", "data/bed_01.TGA");
+	bed->local_matrix.setTranslation(0, 0, 0);
+	//bed->local_matrix.setScale(50, 50, 50);
+	world->root->addChildren(bed);
 
 	//((EntityMesh*)test)->texture = textureMng->getTexture("data/floor.tga");
 

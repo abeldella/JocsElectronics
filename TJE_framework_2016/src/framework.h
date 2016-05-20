@@ -9,6 +9,7 @@
 #include <cmath>
 
 #define DEG2RAD 0.0174532925
+#define PI 3.14159265359
 
 class Vector2
 {

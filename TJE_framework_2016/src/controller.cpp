@@ -51,13 +51,12 @@ void Controller::update(float dt)
 			player->rotate(-90 * pad_state.axis[LEFT_ANALOG_X] * dt, Vector3(0, 0, 1));
 
 		if (abs(pad_state.axis[RIGHT_ANALOG_X]) > 0.1) 
-			player->camera_info.x = pad_state.axis[RIGHT_ANALOG_X];
+			player->camera_info.x = PI/2 * pad_state.axis[RIGHT_ANALOG_X];
 		else
 			player->camera_info.x = 0;
 
 		if (abs(pad_state.axis[RIGHT_ANALOG_Y]) > 0.1) {
 			player->camera_info.z = pad_state.axis[RIGHT_ANALOG_Y];
-			std::cout << "RIGHT_ANALOG_Y " << pad_state.button[RIGHT_ANALOG_Y] << std::endl;
 		}
 		else player->camera_info.z = 0;
 
@@ -68,6 +67,16 @@ void Controller::update(float dt)
 		}
 
 		if (pad_state.button[BACK_BUTTON]) exit(0);
+		if (pad_state.button[Y_BUTTON]) {
+			World* world = World::getInstance();
+			Fighter* boss = world->boss;
+			world->root->destroyChild(boss, 15000.0);
+		}
+
+		/*CONTROL DE TRIGGERS
+		left = +max( 0.0f, pad_state.button[TRIGGERS] );
+		right = -max( 0.0f, pad_state.button[TRIGGERS] );
+		*/
 	}
 
 	Matrix44 global_player_matrix = player->getGlobalMatrix();

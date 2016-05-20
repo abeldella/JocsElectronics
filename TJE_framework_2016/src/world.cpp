@@ -19,7 +19,7 @@ World::World()
 {
 	root = NULL;
 	skybox = NULL;
-	
+	boss = NULL;	
 }
 
 
@@ -52,7 +52,7 @@ Entity* World::factory(const char* filename)
 		case FIGHTER:
 			{
 				for (int i = 0; i < num_entities; i++) {
-					createFighter();
+					//createFighter();
 				}
 			}
 			break;
@@ -67,7 +67,7 @@ Entity* World::factory(const char* filename)
 			break;
 
 		case TERRAIN:
-			//createTerrain();
+			createTerrain();
 			break;
 		case SKYBOX:
 			createSkybox();
@@ -93,6 +93,7 @@ void World::createSkybox()
 {
 	skybox = new EntityMesh();
 	skybox->setup("data/meshes/skybox/cubemap.ASE", "data/textures/cielo.TGA");
+	//skybox->setup("data/meshes/skybox/cubemap.ASE", "data/textures/cielo.TGA");
 	skybox->local_matrix.setScale(100, 100, 100);
 	skybox->frustum_test = false;
 }
@@ -131,13 +132,29 @@ Entity* World::createEntity(Vector3 pos)
 
 void World::createTerrain()
 {
-	for (int i = -3; i <= 3; i++) {
+	/*for (int i = -3; i <= 3; i++) {
 		for (int j = -3; j <= 3; j++) {
 			EntityMesh* island = new EntityMesh();
+			
+			
 			island->setup("data/meshes/island.ASE", "data/textures/island_color_luz.TGA");
 			island->local_matrix.setTranslation( i*island->mesh->halfSize.x * 2, 0, j*island->mesh->halfSize.z);
 			//island->shader = fog_shader;
 			root->addChildren(island);
+		}
+	}*/
+
+//Creamos el suelo de la habitación
+	for (int i = -5; i < 5; i++) {
+		for (int j = -5; j < 5; j++) {
+			Mesh* plane = new Mesh();
+			plane->createPlane(1000);
+			EntityMesh* floor = new EntityMesh();
+			floor->mesh = plane;
+			floor->texture = Texture::get("data/TilesPlain0136_1_S.TGA");
+			floor->two_sided = true;
+			floor->local_matrix.setTranslation(i*floor->mesh->halfSize.x * 2, -10, j*floor->mesh->halfSize.z * 2);
+			root->addChildren(floor);
 		}
 	}
 
@@ -159,5 +176,5 @@ void World::createBoss(const char* name, const char* texture)
 	pos.random(1000);
 	boss->local_matrix.setTranslation(pos.x, pos.y, pos.z);
 	root->addChildren(boss);
-	//root->destroyChild(boss, 15000.0);
+	this->boss = boss;
 }

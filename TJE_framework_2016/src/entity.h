@@ -13,7 +13,6 @@ class Shader;
 class Entity
 {
 public:
-	static unsigned int numEntidades;
 	unsigned int uid;
 	std::string name;
 	Matrix44 local_matrix;
@@ -84,6 +83,7 @@ public:
 	void updateCamera(Camera* camera);
 
 	Vector3 getCameraEye();
+
 
 };
 
