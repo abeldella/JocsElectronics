@@ -13,6 +13,7 @@ class Shader;
 class Entity
 {
 public:
+	static unsigned int numEntidades;
 	unsigned int uid;
 	std::string name;
 	Matrix44 local_matrix;
@@ -20,6 +21,7 @@ public:
 	std::vector<Entity*> children;
 	static std::vector<Entity*> to_destroy;
 	Entity* parent;
+	float ttd; //time to destroy
 
 	Entity();
 	virtual ~Entity();
@@ -82,7 +84,6 @@ public:
 	void updateCamera(Camera* camera);
 
 	Vector3 getCameraEye();
-
 
 };
 

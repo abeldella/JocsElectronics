@@ -52,7 +52,7 @@ Entity* World::factory(const char* filename)
 		case FIGHTER:
 			{
 				for (int i = 0; i < num_entities; i++) {
-					createPlane();
+					createFighter();
 				}
 			}
 			break;
@@ -67,7 +67,7 @@ Entity* World::factory(const char* filename)
 			break;
 
 		case TERRAIN:
-			createTerrain();
+			//createTerrain();
 			break;
 		case SKYBOX:
 			createSkybox();
@@ -97,7 +97,7 @@ void World::createSkybox()
 	skybox->frustum_test = false;
 }
 
-void World::createPlane()
+void World::createFighter()
 {
 	for (int i = 0; i < 100; i++) {
 
@@ -134,12 +134,7 @@ void World::createTerrain()
 	for (int i = -3; i <= 3; i++) {
 		for (int j = -3; j <= 3; j++) {
 			EntityMesh* island = new EntityMesh();
-			
-			
-			//island->setup("data/meshes/island.ASE", "data/textures/island_color_luz.TGA");
-			Mesh* test = new Mesh();
-			test->createPlane(100);
-			island->mesh = test;
+			island->setup("data/meshes/island.ASE", "data/textures/island_color_luz.TGA");
 			island->local_matrix.setTranslation( i*island->mesh->halfSize.x * 2, 0, j*island->mesh->halfSize.z);
 			//island->shader = fog_shader;
 			root->addChildren(island);
@@ -164,4 +159,5 @@ void World::createBoss(const char* name, const char* texture)
 	pos.random(1000);
 	boss->local_matrix.setTranslation(pos.x, pos.y, pos.z);
 	root->addChildren(boss);
+	//root->destroyChild(boss, 15000.0);
 }

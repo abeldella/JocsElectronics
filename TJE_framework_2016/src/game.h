@@ -54,6 +54,8 @@ public:
 
 	Fighter* player;
 	Controller* ctrlPlayer;
+
+	SDL_Joystick* pad;
 };
 
 

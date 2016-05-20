@@ -30,7 +30,7 @@ public:
 	Entity* factory(const char* filename);
 
 	void createSkybox();
-	void createPlane();
+	void createFighter();
 	Entity* createEntity(Vector3 pos);
 	void docCreateEntity(Vector3 pos);
 	void createTerrain();

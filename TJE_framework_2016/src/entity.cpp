@@ -6,10 +6,15 @@
 #include "bullets.h"
 #include "game.h"
 
+//---------------------------------------------------------------------------------------------------------
+unsigned int Entity::numEntidades = 0;
+std::vector<Entity*> Entity::to_destroy;
+
 Entity::Entity() 
 {
 	parent = NULL;
-
+	uid = numEntidades;
+	numEntidades++;
 }
 
 Entity::~Entity() 
@@ -21,14 +26,6 @@ Entity::~Entity()
 	for (it = children.begin(); it != children.end(); it++) {
 		delete(*it);
 	}
-}
-
-void removeChild(Entity * entity) {
-
-}
-
-void destroyChild(Entity * entity, float time) {
-
 }
 
 void Entity::addChildren(Entity* entity)
@@ -49,6 +46,16 @@ void Entity::update(float dt)
 	for (int i = 0; i < children.size(); i++) {
 		children[i]->update(dt);
 	}
+
+	std::vector<Entity*>::iterator it;
+	for (it = to_destroy.begin(); it != to_destroy.end(); it++) {
+		(*it)->ttd -= dt;
+		if ((*it)->ttd <= 0) {
+			to_destroy.erase(it);
+			delete(*it);
+			it--;
+		}
+	}
 }
 
 void Entity::move(Vector3 v)
@@ -59,13 +66,27 @@ void Entity::move(Vector3 v)
 
 void Entity::rotate(float angle_in_deg, Vector3 v)
 {
-
 	local_matrix.rotateLocal(angle_in_deg * DEG2RAD, v);
 }
 
+void Entity::removeChild(Entity * entity) {
+	//Eliminamos la entidad del vector de hijos
+	for (int i = 0; i < this->children.size(); i++) {
+		if (this->children[i] == entity) {
+			this->children.erase(this->children.begin() + i);
+		}
+	}
+	//Desvinculamos la entidad de su padre
+	entity->parent = NULL;
+}
 
+void Entity::destroyChild(Entity * entity, float time) {
+	this->removeChild(entity);
+	entity->ttd = time;
+	to_destroy.push_back(entity);
+}
 
-
+//---------------------------------------------------------------------------------------------------------
 EntityMesh::EntityMesh() 
 {
 	mesh = lod_mesh = NULL;
@@ -154,7 +175,7 @@ void EntityMesh::setup(const char* mesh, const char* texture, const char* lod_me
 	}
 }
 
-
+//---------------------------------------------------------------------------------------------------------
 Fighter::Fighter()
 {
 	speed = 1;	
