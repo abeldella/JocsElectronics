@@ -13,6 +13,7 @@ class Shader;
 class Entity
 {
 public:
+	static unsigned int numEntidades;
 	unsigned int uid;
 	std::string name;
 	Matrix44 local_matrix;
@@ -21,6 +22,7 @@ public:
 	static std::vector<Entity*> to_destroy;
 	Entity* parent;
 	float ttd; //time to destroy
+	bool destroy_entity;
 
 	Entity();
 	virtual ~Entity();
@@ -34,7 +36,7 @@ public:
 
 	void addChildren(Entity* entity);
 	void removeChild(Entity * entity); //Desenlaza una entidad de su padre
-	void destroyChild(Entity * entity, float time); //Destruye una entidad y sus hijos
+	void destroyChild(Entity * entity); //Destruye una entidad y sus hijos
 
 	Matrix44 getGlobalMatrix() {
 		if (parent)

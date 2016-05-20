@@ -175,6 +175,8 @@ void World::createBoss(const char* name, const char* texture)
 	Vector3 pos;
 	pos.random(1000);
 	boss->local_matrix.setTranslation(pos.x, pos.y, pos.z);
+	boss->ttd = 10;
+	boss->destroy_entity = true;
 	root->addChildren(boss);
 	this->boss = boss;
 }

@@ -5,10 +5,10 @@
 
 Controller::Controller()
 {
-/*	target = NULL;
+	target = NULL;
 	pad = NULL;
 	camera = NULL;
-	keystate = NULL;*/
+	keystate = NULL;
 	/*mouse_locked = false;*/
 	active = true;
 }
@@ -70,7 +70,7 @@ void Controller::update(float dt)
 		if (pad_state.button[Y_BUTTON]) {
 			World* world = World::getInstance();
 			Fighter* boss = world->boss;
-			world->root->destroyChild(boss, 15000.0);
+			world->root->destroyChild(boss);
 		}
 
 		/*CONTROL DE TRIGGERS

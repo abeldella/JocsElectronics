@@ -307,7 +307,7 @@ void Mesh::createPlane(float size)
 
 	center = (max + min) * 0.5;
 	halfSize = max - center;
-	std::cout << "halfSize = " << halfSize.length() << std::endl;
+	//std::cout << "halfSize = " << halfSize.length() << std::endl;
 }
 
 bool Mesh::loadASE(const char* filename) {
