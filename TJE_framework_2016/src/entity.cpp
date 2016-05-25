@@ -6,16 +6,16 @@
 #include "bullets.h"
 #include "game.h"
 
-//---------------------------------------------------------------------------------------------------------
 unsigned int Entity::numEntidades = 0;
 std::vector<Entity*> Entity::to_destroy;
 
-Entity::Entity()
+Entity::Entity() 
 {
 	parent = NULL;
 	destroy_entity = false;
 	uid = numEntidades;
 	numEntidades++;
+	ttd = 3;
 }
 
 Entity::~Entity() 
@@ -27,50 +27,6 @@ Entity::~Entity()
 	for (it = children.begin(); it != children.end(); it++) {
 		delete(*it);
 	}
-}
-
-void Entity::addChildren(Entity* entity)
-{
-	entity->parent = this;
-	children.push_back( entity );
-}
-
-void Entity::render( Camera* camera ) 
-{
-	for (int i = 0; i < children.size(); i++) {
-		children[i]->render(camera);
-	}
-}
-
-void Entity::update(float dt)
-{
-	for (int i = 0; i < children.size(); i++) {
-		children[i]->update(dt);
-		children[i]->ttd -= dt;
-		if (children[i]->destroy_entity && children[i]->ttd <= 0) {
-			destroyChild(children[i]);
-		}
-	}
-
-	std::vector<Entity*>::iterator it;
-	Entity * entity;
-	for (int i = 0; i < to_destroy.size(); i++) {
-		entity = to_destroy[i];
-		to_destroy.erase(to_destroy.begin() + i);
-		delete(entity);
-	}
-}
-
-void Entity::move(Vector3 v)
-{
-	local_matrix.traslateLocal(v.x, v.y, v.z);
-}
-
-
-void Entity::rotate(float angle_in_deg, Vector3 v)
-{
-
-	local_matrix.rotateLocal(angle_in_deg * DEG2RAD, v);
 }
 
 void Entity::removeChild(Entity * entity) {
@@ -87,6 +43,66 @@ void Entity::removeChild(Entity * entity) {
 void Entity::destroyChild(Entity * entity) {
 	this->removeChild(entity);
 	to_destroy.push_back(entity);
+}
+
+
+void Entity::addChildren(Entity* entity)
+{
+	entity->parent = this;
+	children.push_back( entity );
+}
+
+void Entity::render( Camera* camera ) 
+{
+	for (int i = 0; i < children.size(); i++) {
+		children[i]->render(camera);
+	}
+}
+
+void Entity::update(float dt) 
+{
+	for (int i = 0; i < children.size(); i++) {
+		children[i]->update(dt);
+		if(children[i]->destroy_entity)
+			children[i]->ttd -= dt;
+
+		if (children[i]->destroy_entity && children[i]->ttd <= 0) {
+			destroyChild(children[i]);
+		}
+	}
+	std::vector<Entity*>::iterator it;
+	Entity* entity;
+	for (int i = 0; i < to_destroy.size(); i++){
+		entity = to_destroy[i];
+		to_destroy.erase(to_destroy.begin() + i);
+		delete(entity);
+		}
+}
+
+void Entity::move(Vector3 v)
+{
+	local_matrix.traslateLocal(v.x, v.y, v.z);
+}
+
+
+void Entity::rotate(float angle_in_deg, Vector3 v)
+{
+
+	local_matrix.rotateLocal(angle_in_deg * DEG2RAD, v);
+}
+
+Matrix44 Entity::getGlobalMatrix() 
+{
+	if (parent)
+		global_matrix = local_matrix * parent->getGlobalMatrix();
+	else
+		global_matrix = local_matrix;
+	return global_matrix;
+}
+
+void Entity::destroyEntity()
+{
+	destroy_entity = true;
 }
 
 //---------------------------------------------------------------------------------------------------------
@@ -181,8 +197,10 @@ void EntityMesh::setup(const char* mesh, const char* texture, const char* lod_me
 //---------------------------------------------------------------------------------------------------------
 Fighter::Fighter()
 {
-	speed = 1;	
+	speed = 0.5;	
+	tta = 10;
 	camera_info.set(0, 0, 0);
+	accelerator = false;
 }
 
 void Fighter::update(float dt)
@@ -200,6 +218,16 @@ void Fighter::update(float dt)
 		local_matrix.m[13] = 0;
 	}
 	velocity = velocity - velocity * 0.006;
+
+	//Acceleration control
+	if (accelerator) {
+		tta -= dt;
+		if (tta <= 0) {
+			speed = 0.5;
+			camera_info.z = 0;
+			accelerator = false;
+		}
+	}
 
 }
 
@@ -231,8 +259,19 @@ void Fighter::updateCamera(Camera* camera)
 	Matrix44 global = getGlobalMatrix();
 	Vector3 eye = global * (rot * Vector3(0, 2, -5));
 	Vector3 center = global * (rot * Vector3(0, 0, 10));
+	/*BOSS
+	Vector3 eye = global * (rot * Vector3(0, 400, -600));
+	Vector3 center = global * (rot * Vector3(0, 0, 1000));*/
 	Vector3 up = global.rotateVector(Vector3(0, 1, 0));
 
-	camera->setPerspective(70 + camera_info.z * 20, Game::instance->window_width / (float)Game::instance->window_height, 0.1, 10000);
+	camera->setPerspective(70 + camera_info.z * 20, Game::instance->window_width / (float)Game::instance->window_height, 0.1, 25000);
 	camera->lookAt(eye, center, up);
+}
+
+void Fighter::accelerate()
+{
+	speed = 5;
+	tta = 10;
+	//camera_info.z = 0.9;
+	accelerator = true;
 }

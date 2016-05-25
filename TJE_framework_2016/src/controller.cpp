@@ -40,6 +40,7 @@ void Controller::update(float dt)
 
 		//ACTIONS
 		if (keystate[SDL_SCANCODE_F]) player->shoot();
+		if (keystate[SDL_SCANCODE_SPACE]) player->accelerate();
 	}
 	//WITH XBOX CONTROLLER
 	if (pad) {
@@ -58,7 +59,7 @@ void Controller::update(float dt)
 		if (abs(pad_state.axis[RIGHT_ANALOG_Y]) > 0.1) {
 			player->camera_info.z = pad_state.axis[RIGHT_ANALOG_Y];
 		}
-		else player->camera_info.z = 0;
+		//else player->camera_info.z = 0;
 
 		if (pad_state.button[RIGHT_ANALOG_BUTTON])
 		{
@@ -69,10 +70,13 @@ void Controller::update(float dt)
 		if (pad_state.button[BACK_BUTTON]) exit(0);
 		if (pad_state.button[Y_BUTTON]) {
 			World* world = World::getInstance();
-			Fighter* boss = world->boss;
-			world->root->destroyChild(boss);
+			world->boss->destroyEntity();
 		}
-
+		if (pad_state.button[RB_BUTTON]) {
+			player->accelerate();			
+		}
+				
+		
 		/*CONTROL DE TRIGGERS
 		left = +max( 0.0f, pad_state.button[TRIGGERS] );
 		right = -max( 0.0f, pad_state.button[TRIGGERS] );
@@ -81,7 +85,14 @@ void Controller::update(float dt)
 
 	Matrix44 global_player_matrix = player->getGlobalMatrix();
 	//camera->lookAt(global_player_matrix * Vector3(0, 2, -5), global_player_matrix *  Vector3(0, 0, 20), global_player_matrix.rotateVector(Vector3(0, 1, 0)));
-	camera = getCamera();
+	if(!player->accelerator)
+		camera = getCamera();
+	else {
+		for (int i = -5; i <= -25; i++) {
+			camera->lookAt(global_player_matrix * Vector3(0, 2, i), global_player_matrix *  Vector3(0, 0, 20), global_player_matrix.rotateVector(Vector3(0, 1, 0)));
+		}
+		camera->lookAt(global_player_matrix * Vector3(0, 2, -25), global_player_matrix *  Vector3(0, 0, 20), global_player_matrix.rotateVector(Vector3(0, 1, 0)));
+	}
 }
 
 Camera* Controller::getCamera()

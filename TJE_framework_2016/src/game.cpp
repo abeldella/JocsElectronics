@@ -57,7 +57,7 @@ void Game::init(void)
 	//create our camera
 	free_camera = new Camera();
 	free_camera->lookAt(Vector3(0,25,25),Vector3(0,0,0), Vector3(0,1,0)); //position the camera and point to 0,0,0
-	free_camera->setPerspective(70,window_width/(float)window_height,0.1,10000); //set the projection, we want to be perspective
+	free_camera->setPerspective(70,window_width/(float)window_height,0.1,25000); //set the projection, we want to be perspective
 	current_camera = free_camera;
 
 	world->factory("data/worlds/world_test.txt");
@@ -68,7 +68,7 @@ void Game::init(void)
 	fog_shader->setVector3("u_fog_color", fog_color);*/
 
 	//Avion para testear delete
-	player = (Fighter*)world->createEntity(Vector3(0, 1000, 0));
+	player = (Fighter*)world->createEntity(Vector3(0,100,0));
 	world->root->addChildren(player);
 
 	player_camera = new Camera();
@@ -83,14 +83,25 @@ void Game::init(void)
 
 	ctrlPlayer->camera = player_camera;
 	current_camera = ctrlPlayer->getCamera();
-	//current_camera = free_camera;
-
 
 	EntityMesh* bed = new EntityMesh();
-	bed->setup("data/Bed.obj", "data/bed_01.TGA");
-	bed->local_matrix.setTranslation(0, 0, 0);
-	//bed->local_matrix.setScale(50, 50, 50);
+	bed->setup("data/bed.obj", "data/bed.tga");
+	bed->local_matrix.setTranslation(0, -10, 1000 - (bed->mesh->center.y + 50));
 	world->root->addChildren(bed);
+
+	EntityMesh* test = new EntityMesh();
+	test->setup("data/test/window.obj", "data/test/window.tga");
+	test->two_sided = true;
+	test->local_matrix.setTranslation(0, 100, -1000);
+	test->local_matrix.rotateLocal(90 * DEG2RAD, Vector3(0, 1, 0));
+	world->root->addChildren(test);
+
+	EntityMesh* test2 = new EntityMesh();
+	test2->setup("data/test/door.obj", "data/test/door.tga");
+	test2->two_sided = true;
+	test2->local_matrix.setTranslation(1005, -10, -1000 - (test2->mesh->center.x * 4));
+	test2->local_matrix.rotateLocal(90 * DEG2RAD, Vector3(0, 1, 0));
+	world->root->addChildren(test2);
 
 	//((EntityMesh*)test)->texture = textureMng->getTexture("data/floor.tga");
 
@@ -135,10 +146,10 @@ void Game::render(void)
 	current_camera->set();
 
 	//Desactivar el depth buffer de openGL para pintar el skybox
-	glDisable(GL_DEPTH_TEST);
+	/*glDisable(GL_DEPTH_TEST);
 	world->skybox->local_matrix.setTranslation(current_camera->eye.x, current_camera->eye.y, current_camera->eye.z);
 	world->skybox->render(current_camera);
-	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);*/
 
 
 	/*Hack de la camara para el ejemplo del planeta lejano creo que serviria para el ejemplo de la cabina
@@ -159,6 +170,8 @@ void Game::render(void)
 	//Draw out world
 	world->root->render(current_camera);
 	bulletMng->render(current_camera);
+
+	world->skybox->render(current_camera);
 
     glDisable( GL_BLEND );
 

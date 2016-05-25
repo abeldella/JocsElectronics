@@ -22,7 +22,7 @@ public:
 	static std::vector<Entity*> to_destroy;
 	Entity* parent;
 	float ttd; //time to destroy
-	bool destroy_entity;
+	bool destroy_entity; //setting entity to destroy
 
 	Entity();
 	virtual ~Entity();
@@ -35,17 +35,12 @@ public:
 	void rotate(float angle_in_deg, Vector3 v);
 
 	void addChildren(Entity* entity);
-	void removeChild(Entity * entity); //Desenlaza una entidad de su padre
-	void destroyChild(Entity * entity); //Destruye una entidad y sus hijos
+	void removeChild(Entity* entity); //Desenlaza una entidad de su padre
+	void destroyChild(Entity* entity); //Destruye una entidad y sus hijos
 
-	Matrix44 getGlobalMatrix() {
-		if (parent)
-			global_matrix = local_matrix * parent->getGlobalMatrix();
-		else
-			global_matrix = local_matrix;
-		return global_matrix;
-			
-	}
+	void destroyEntity();
+
+	Matrix44 getGlobalMatrix();
 
 };
 
@@ -77,11 +72,14 @@ public:
 	float speed;
 	Vector3 velocity;
 	Vector3 camera_info;
+	float tta; //time to accelerate
+	bool accelerator;
 
 	Fighter();
 
 	void update(float dt);
 	void shoot();
+	void accelerate();
 	void updateCamera(Camera* camera);
 
 	Vector3 getCameraEye();
