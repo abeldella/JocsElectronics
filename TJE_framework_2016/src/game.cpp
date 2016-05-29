@@ -53,6 +53,7 @@ void Game::init(void)
 	TextureManager* textureMng = TextureManager::getInstance();
 	MeshManager* meshMng = MeshManager::getInstance();
 	bulletMng = BulletMaganer::getInstance();
+	collisionMng = CollisionManager::getInstance();
 
 	//create our camera
 	free_camera = new Camera();
@@ -90,20 +91,28 @@ void Game::init(void)
 	world->root->addChildren(bed);
 
 	EntityMesh* test = new EntityMesh();
-	test->setup("data/test/window.obj", "data/test/window.tga");
+	test->setup("data/test/ok1/window.obj", "data/test/ok1/window.tga");
 	test->two_sided = true;
-	test->local_matrix.setTranslation(0, 100, -1000);
+	test->local_matrix.setTranslation(0, 150, -996);
 	test->local_matrix.rotateLocal(90 * DEG2RAD, Vector3(0, 1, 0));
 	world->root->addChildren(test);
 
-	EntityMesh* test2 = new EntityMesh();
-	test2->setup("data/test/door.obj", "data/test/door.tga");
+	EntityCollider* test2 = new EntityCollider();
+	test2->setup("data/test/ok1/door.obj", "data/test/ok1/door.tga");
 	test2->two_sided = true;
 	test2->local_matrix.setTranslation(1005, -10, -1000 - (test2->mesh->center.x * 4));
 	test2->local_matrix.rotateLocal(90 * DEG2RAD, Vector3(0, 1, 0));
+	test2->onDemand();
 	world->root->addChildren(test2);
 
-	//((EntityMesh*)test)->texture = textureMng->getTexture("data/floor.tga");
+
+	EntityMesh* test3 = new EntityMesh();
+	//test3->setup("data/test/Luxo.obj");
+	test3->two_sided = true;
+	test3->local_matrix.setTranslation(0,100,100);
+	//test3->mesh->colors.push_back(Vector4(0, 0, 0, 1));
+	//test3->local_matrix.rotateLocal(90 * DEG2RAD, Vector3(1, 0, 0));
+	world->root->addChildren(test3);
 
 
 	/*	Codigo para composición de meshes, por ejemplo avion con misil.
@@ -169,9 +178,9 @@ void Game::render(void)
 
 	//Draw out world
 	world->root->render(current_camera);
-	bulletMng->render(current_camera);
-
 	world->skybox->render(current_camera);
+
+	bulletMng->render(current_camera);
 
     glDisable( GL_BLEND );
 
@@ -190,8 +199,10 @@ void Game::render(void)
 void Game::update(double seconds_elapsed)
 {
 	world->root->update(seconds_elapsed * time_scale);
-	bulletMng->update(seconds_elapsed * time_scale);
 	ctrlPlayer->update(seconds_elapsed * time_scale);
+	collisionMng->update(seconds_elapsed * time_scale);
+
+	bulletMng->update(seconds_elapsed * time_scale);
 
 
 	double speed = seconds_elapsed * 100; //the speed is defined by the seconds_elapsed so it goes constant

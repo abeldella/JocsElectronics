@@ -63,7 +63,7 @@ void Controller::update(float dt)
 
 		if (pad_state.button[RIGHT_ANALOG_BUTTON])
 		{
-			std::cout << "RAB shooting " << pad_state.button[RIGHT_ANALOG_BUTTON] << std::endl;
+			//std::cout << "RAB shooting " << pad_state.button[RIGHT_ANALOG_BUTTON] << std::endl;
 			player->shoot();
 		}
 

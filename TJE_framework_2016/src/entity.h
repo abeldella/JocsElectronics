@@ -5,6 +5,8 @@
 #include "framework.h"
 #include "utils.h"
 
+#define MAX_TTS 0.1
+
 class Camera;
 class Mesh;
 class Texture;
@@ -64,15 +66,29 @@ public:
 
 };
 
+class EntityCollider : public EntityMesh
+{
+public:
+	bool dynamic_entity;
+
+	EntityCollider();
+	virtual void onDemand();
+//on demand por si se castea preguntar si ya tiene collision sino rellenar
+	/*le dice a la mesh que genere un collision model y la mesh genera este collision model a su bola*/
+	/*virtual bool onCollision();
+	virtual bool onBulletCollision();*/
+	//OnDemand podemos llamar al createCollisionModel from Mesh
+};
 
 
-class Fighter : public EntityMesh
+class Fighter : public EntityCollider
 {
 public:
 	float speed;
 	Vector3 velocity;
 	Vector3 camera_info;
 	float tta; //time to accelerate
+	float tts; //time between shoot
 	bool accelerator;
 
 	Fighter();

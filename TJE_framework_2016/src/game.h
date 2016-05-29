@@ -10,6 +10,7 @@
 #include "bullets.h"
 #include "world.h"
 #include "controller.h"
+#include "manager.h"
 
 class Game
 {
@@ -49,6 +50,7 @@ public:
 
 	World* world;
 	BulletMaganer* bulletMng;
+	CollisionManager* collisionMng;
 
 	float time_scale;
 

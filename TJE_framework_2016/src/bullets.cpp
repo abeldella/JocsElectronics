@@ -68,6 +68,6 @@ void BulletMaganer::update(float dt)
 
 		bullet.last_pos = bullet.pos;
 		bullet.pos = bullet.pos + bullet.vel * dt;
-		bullet.ttl -= dt;
 	}
+
 }

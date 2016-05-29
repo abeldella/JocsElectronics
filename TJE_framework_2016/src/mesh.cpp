@@ -22,6 +22,8 @@ Mesh::Mesh()
 
 	center = Vector3();
 	halfSize = Vector3();
+
+	collision_model = NULL;
 }
 
 Mesh::Mesh( const Mesh& m )
@@ -30,6 +32,8 @@ Mesh::Mesh( const Mesh& m )
 	normals = m.normals;
 	uvs = m.uvs;
 	colors = m.colors;
+
+	collision_model = m.collision_model;
 }
 
 Mesh::~Mesh()
@@ -711,7 +715,24 @@ Vector3 Mesh::parseVector3(const char* text, const char separator)
 	return result;
 };
 
+void Mesh::createCollisionModel()
+{
+	collision_model = newCollisionModel3D();
+	int num_faces = vertices.size()/3; //Numero de triangulos
 
+	collision_model->setTriangleNumber(num_faces);
+
+	for (int i = 0; i < num_faces*3; i = i+3) {
+		collision_model->addTriangle(vertices[i].x, vertices[i].y, vertices[i].z,
+									vertices[i+1].x, vertices[i+1].y, vertices[i+1].z,
+									vertices[i+2].x, vertices[i+2].y, vertices[i+2].z );
+	}
+
+	collision_model->finalize();	
+}
+
+
+//---------------------------------------------------------------------------------------------------------
 MeshManager* MeshManager::instance = NULL;
 
 MeshManager::MeshManager() {

@@ -95,7 +95,8 @@ void World::createSkybox()
 	skybox->setup("data/meshes/skybox/cubemap.ASE", "data/prueba3.tga");
 	//skybox->setup("data/meshes/skybox/cubemap.ASE", "data/textures/cielo.TGA");
 	//skybox->local_matrix.setTranslation(0, skybox->mesh->halfSize.y, 0);
-	skybox->local_matrix.setScale(40, 50, 40);
+	//skybox->local_matrix.setScale(40, 50, 40);
+	skybox->local_matrix.setScale(20, 25, 20);
 	skybox->frustum_test = false;
 
 	/*for (int i = -4; i < 5; i++) {
@@ -209,7 +210,9 @@ void World::createBoss(const char* name, const char* texture)
 	Fighter* boss = new Fighter();
 	boss->setup(n_filename.c_str(), t_filename.c_str());
 	boss->local_matrix.setTranslation(pos.x, pos.y, pos.z);
-	//boss->ttd = 10;
+	
+	boss->dynamic_entity = true;
+	boss->onDemand();
 
 	root->addChildren(boss);
 	this->boss = boss;

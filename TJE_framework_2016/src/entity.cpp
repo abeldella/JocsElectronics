@@ -5,6 +5,7 @@
 #include "texture.h"
 #include "bullets.h"
 #include "game.h"
+#include "manager.h"
 
 unsigned int Entity::numEntidades = 0;
 std::vector<Entity*> Entity::to_destroy;
@@ -70,7 +71,7 @@ void Entity::update(float dt)
 			destroyChild(children[i]);
 		}
 	}
-	std::vector<Entity*>::iterator it;
+
 	Entity* entity;
 	for (int i = 0; i < to_destroy.size(); i++){
 		entity = to_destroy[i];
@@ -194,11 +195,31 @@ void EntityMesh::setup(const char* mesh, const char* texture, const char* lod_me
 	}
 }
 
+
+//---------------------------------------------------------------------------------------------------------
+EntityCollider::EntityCollider()
+{
+	dynamic_entity = false;
+}
+
+void EntityCollider::onDemand()
+{
+	mesh->createCollisionModel();
+
+	CollisionManager* manager = CollisionManager::getInstance();
+	if (dynamic_entity) {
+		manager->setDynamic(this);
+	}
+	else manager->setStatic(this);
+}
+
+
 //---------------------------------------------------------------------------------------------------------
 Fighter::Fighter()
 {
 	speed = 0.5;	
-	tta = 10;
+	tta = 5;
+	tts = MAX_TTS;
 	camera_info.set(0, 0, 0);
 	accelerator = false;
 }
@@ -229,21 +250,29 @@ void Fighter::update(float dt)
 		}
 	}
 
+	if( tts > 0) 
+		tts -= dt;
+
 }
 
 
 void Fighter::shoot()
 {
-	BulletMaganer* bulletMng = BulletMaganer::getInstance();
-	Matrix44 global_matrix = getGlobalMatrix();
-	//Falta tener en cuenta la velocidad del avion
-	Vector3 vel = global_matrix.rotateVector(Vector3(0, 0, 1000));
-	Vector3 pos = global_matrix * Vector3(2.1, -0.55, 0.6);
-	pos = pos + velocity ;
-	bulletMng->createBullet(pos, vel, MAX_TTL, this);
-	pos = global_matrix * Vector3(-2.1, -0.55, 0.6);
-	pos = pos + velocity;
-	bulletMng->createBullet(pos, vel, MAX_TTL, this);
+	if (tts <= 0) {
+		BulletMaganer* bulletMng = BulletMaganer::getInstance();
+		Matrix44 global_matrix = getGlobalMatrix();
+		//Falta tener en cuenta la velocidad del avion
+		Vector3 vel = global_matrix.rotateVector(Vector3(0, 0, 1000));
+		Vector3 pos = global_matrix * Vector3(2.1, -0.55, 0.6);
+		pos = pos + velocity;
+		bulletMng->createBullet(pos, vel, MAX_TTL, this);
+		pos = global_matrix * Vector3(-2.1, -0.55, 0.6);
+		pos = pos + velocity;
+		bulletMng->createBullet(pos, vel, MAX_TTL, this);
+
+		tts = MAX_TTS;
+	}
+
 }
 
 Vector3 Fighter::getCameraEye()

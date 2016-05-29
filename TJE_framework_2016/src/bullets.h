@@ -3,7 +3,7 @@
 
 #include "framework.h"
 #define MAX_BULLETS 1024
-#define MAX_TTL 5
+#define MAX_TTL 3
 
 class Camera;
 
@@ -22,8 +22,9 @@ public:
 class BulletMaganer
 {
 private:
-	Bullet bullets[MAX_BULLETS];
+	//Bullet bullets[MAX_BULLETS];
 	BulletMaganer();
+
 public:
 	
 	static BulletMaganer* instance;
@@ -33,6 +34,7 @@ public:
 		return instance;
 	}
 
+	Bullet bullets[MAX_BULLETS];
 
 	void createBullet(Vector3 pos, Vector3 vel, float ttl, void* owner);
 	void render(Camera* camera);

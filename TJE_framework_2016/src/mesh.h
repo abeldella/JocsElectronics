@@ -10,6 +10,7 @@
 #include <map>
 #include <string>
 #include <assert.h>
+#include "extra\coldet\coldet.h"
 
 class Shader;
 class Mesh;
@@ -43,6 +44,8 @@ public:
 	Vector3 center;
 	Vector3 halfSize;
 
+	CollisionModel3D* collision_model;
+
 	unsigned int vertices_vbo_id;
 	unsigned int normals_vbo_id;
 	unsigned int uvs_vbo_id;
@@ -65,6 +68,8 @@ public:
 	bool writeBIN(const char* filename);
 	bool loadBIN(const char* filename);
 	bool loadOBJ(const char* filename);
+
+	void createCollisionModel();
 
 	std::vector<std::string> tokenize(const std::string& source, const char* delimiters, bool process_strings = NULL);
 	Vector3 parseVector3(const char* text, const char separator);
