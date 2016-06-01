@@ -12,6 +12,7 @@ CollisionManager::CollisionManager()
 {
 	assert(instance == NULL); //must be only one
 	instance = this;
+
 }
 
 void CollisionManager::update(float dt)
@@ -26,21 +27,29 @@ bool CollisionManager::bulletToStatic()
 {
 	bManager = BulletMaganer::getInstance();
 
-	for (int j = 0; j < static_entities.size(); j++) {
+	for (int i = 0; i < static_entities.size(); i++) {
 
-		EntityCollider* sEntity = static_entities[j];
+		EntityCollider* sEntity = static_entities[i];
 		sEntity->mesh->collision_model->setTransform(sEntity->getGlobalMatrix().m);
 
-		for (int i = 0; i < MAX_BULLETS; i++) {	
+		for (int j = 0; j < MAX_BULLETS; j++) {	
 			
-			if (bManager->bullets[i].ttl <= 0) continue;
-			Vector3 pos = bManager->bullets[i].pos;
-			Vector3 last_pos = bManager->bullets[i].last_pos;
+			if (bManager->bullets[j].ttl <= 0) continue;
+			Vector3 pos = bManager->bullets[j].pos;
+			Vector3 last_pos = bManager->bullets[j].last_pos;
 			Vector3 director = pos - last_pos;
 
 			if (sEntity->mesh->collision_model->rayCollision(last_pos.v, director.v, true) == false)continue;
+
+			Vector3 collision;
+			sEntity->mesh->collision_model->getCollisionPoint(collision.v, true);
+			
+			collision = sEntity->getGlobalMatrix() * collision;
+			pointsOfCollision.vertices.push_back(collision);
+
+			static_entities.erase(static_entities.begin() + i);
+			sEntity->onBulletCollision();
 			return true;
-			//Llamar a onBulletCollision
 		}
 	}
 	return false;
@@ -64,8 +73,10 @@ bool CollisionManager::bulletToDynamic()
 
 			if (dEntity->mesh->collision_model->rayCollision(last_pos.v, director.v, true) == false) continue;
 
-			//si destruimos la entidad tenemos que sacarla de este vector
-			//dEntity->destroyEntity();
+			//si destruimos la entidad tenemos que sacarla del vector de entidades dinamicas
+			dynamic_entities.erase(dynamic_entities.begin() + i);
+
+			dEntity->onBulletCollision();
 			return true;
 		}
 	}

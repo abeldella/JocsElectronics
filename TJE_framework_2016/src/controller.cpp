@@ -23,6 +23,8 @@ void Controller::update(float dt)
 	Game* game = Game::instance;
 	keystate = game->keystate;
 
+
+
 	if (active) {
 
 		if (keystate[SDL_SCANCODE_W] || keystate[SDL_SCANCODE_UP]) player->rotate(-90 * dt, Vector3(1, 0, 0));
@@ -68,13 +70,18 @@ void Controller::update(float dt)
 		}
 
 		if (pad_state.button[BACK_BUTTON]) exit(0);
-		if (pad_state.button[Y_BUTTON]) {
-			World* world = World::getInstance();
-			world->boss->destroyEntity();
-		}
+		
 		if (pad_state.button[RB_BUTTON]) {
 			player->accelerate();			
 		}
+
+		if (pad_state.button[Y_BUTTON]) {
+			target = game->test3;
+		}
+		if (pad_state.button[X_BUTTON]) {
+			target = game->player;
+		}
+
 				
 		
 		/*CONTROL DE TRIGGERS

@@ -213,6 +213,10 @@ void EntityCollider::onDemand()
 	else manager->setStatic(this);
 }
 
+void EntityCollider::onBulletCollision()
+{
+	destroyEntity();
+}
 
 //---------------------------------------------------------------------------------------------------------
 Fighter::Fighter()
@@ -222,6 +226,11 @@ Fighter::Fighter()
 	tts = MAX_TTS;
 	camera_info.set(0, 0, 0);
 	accelerator = false;
+
+	dynamic_entity = true;
+
+	camera_eye = Vector3(0, 2, -5);
+	camera_center = Vector3(0, 0, 10);
 }
 
 void Fighter::update(float dt)
@@ -286,11 +295,11 @@ void Fighter::updateCamera(Camera* camera)
 	Matrix44 rot;
 	rot.rotateLocal(camera_info.x * 2.0, Vector3(0, 1, 0));
 	Matrix44 global = getGlobalMatrix();
-	Vector3 eye = global * (rot * Vector3(0, 2, -5));
-	Vector3 center = global * (rot * Vector3(0, 0, 10));
-	/*BOSS
-	Vector3 eye = global * (rot * Vector3(0, 400, -600));
-	Vector3 center = global * (rot * Vector3(0, 0, 1000));*/
+	Vector3 eye = global * (rot * camera_eye);
+	Vector3 center = global * (rot * camera_center);
+	/*
+	Vector3 eye = global * (rot * Vector3(0, 8, -20));
+	Vector3 center = global * (rot * Vector3(0, 9, 30)); */
 	Vector3 up = global.rotateVector(Vector3(0, 1, 0));
 
 	camera->setPerspective(70 + camera_info.z * 20, Game::instance->window_width / (float)Game::instance->window_height, 0.1, 25000);

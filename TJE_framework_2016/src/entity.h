@@ -73,6 +73,7 @@ public:
 
 	EntityCollider();
 	virtual void onDemand();
+	virtual void onBulletCollision();
 //on demand por si se castea preguntar si ya tiene collision sino rellenar
 	/*le dice a la mesh que genere un collision model y la mesh genera este collision model a su bola*/
 	/*virtual bool onCollision();
@@ -87,6 +88,10 @@ public:
 	float speed;
 	Vector3 velocity;
 	Vector3 camera_info;
+
+	Vector3 camera_eye;
+	Vector3 camera_center;
+
 	float tta; //time to accelerate
 	float tts; //time between shoot
 	bool accelerator;

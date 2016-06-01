@@ -3,6 +3,7 @@
 
 #include "framework.h"
 #include "bullets.h"
+#include "mesh.h"
 
 class EntityCollider;
 
@@ -25,6 +26,8 @@ public:
 
 	void setDynamic(EntityCollider* entity);
 	void setStatic(EntityCollider* entity);
+
+	Mesh pointsOfCollision;
 
 private:
 	CollisionManager();

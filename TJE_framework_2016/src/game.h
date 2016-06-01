@@ -23,6 +23,7 @@ public:
 	int window_height;
     
     float time;
+	float time_scale; //game mov speed
 
 	//keyboard state
 	const Uint8* keystate;
@@ -32,10 +33,15 @@ public:
 	Vector2 mouse_position; //last mouse position
 	Vector2 mouse_delta; //mouse movement in the last frame
 	bool mouse_locked; //tells if the mouse is locked (not seen)
-	
+
 	Camera* current_camera; //active
 	Camera* free_camera; //our global camera
 	Camera* player_camera; //player
+
+	Fighter* player;
+	Controller* ctrlPlayer;
+
+	SDL_Joystick* pad;
 
 	Game(SDL_Window* window);
 	void init( void );
@@ -52,12 +58,11 @@ public:
 	BulletMaganer* bulletMng;
 	CollisionManager* collisionMng;
 
-	float time_scale;
+	//PRUEBAS DE IA
+	Fighter* bosstest;
 
-	Fighter* player;
-	Controller* ctrlPlayer;
-
-	SDL_Joystick* pad;
+	void renderDebug(Camera* camera);
+	Fighter* test3;
 };
 
 

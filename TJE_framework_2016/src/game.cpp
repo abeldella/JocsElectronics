@@ -12,6 +12,8 @@
 RenderToTexture* rt = NULL;
 Game* Game::instance = NULL;
 
+std::vector< Vector3 > debug_lines;
+
 Game::Game(SDL_Window* window)
 {
 	this->window = window;
@@ -70,11 +72,12 @@ void Game::init(void)
 
 	//Avion para testear delete
 	player = (Fighter*)world->createEntity(Vector3(0,100,0));
+	player->onDemand();
 	world->root->addChildren(player);
 
 	player_camera = new Camera();
 	player_camera->setPerspective(70, window_width / (float)window_height, 0.1, 10000);
-	player_camera->lookAt(player->getGlobalMatrix() * Vector3(0, 2, -5), player->getGlobalMatrix() *  Vector3(0, 0, 20), Vector3(0, 1, 0));
+	player_camera->lookAt(player->getGlobalMatrix() * Vector3(0, 2, -5), player->getGlobalMatrix() *  Vector3(0, 0, 50), Vector3(0, 1, 0));
 	
 
 
@@ -90,12 +93,18 @@ void Game::init(void)
 	bed->local_matrix.setTranslation(0, -10, 1000 - (bed->mesh->center.y + 50));
 	world->root->addChildren(bed);
 
-	EntityMesh* test = new EntityMesh();
-	test->setup("data/test/ok1/window.obj", "data/test/ok1/window.tga");
-	test->two_sided = true;
-	test->local_matrix.setTranslation(0, 150, -996);
-	test->local_matrix.rotateLocal(90 * DEG2RAD, Vector3(0, 1, 0));
-	world->root->addChildren(test);
+	for (int i = 0; i < 5; i++) {
+		EntityCollider* test = new EntityCollider();
+		test->setup("data/test/dartboard.obj", "data/test/dartboard.tga");
+		test->two_sided = true;
+		
+		Vector3 pos;
+		pos.random(1000);
+
+		test->local_matrix.setTranslation(pos.x, pos.y, pos.z);
+		test->onDemand();
+		world->root->addChildren(test);
+	}
 
 	EntityCollider* test2 = new EntityCollider();
 	test2->setup("data/test/ok1/door.obj", "data/test/ok1/door.tga");
@@ -106,13 +115,17 @@ void Game::init(void)
 	world->root->addChildren(test2);
 
 
-	EntityMesh* test3 = new EntityMesh();
-	//test3->setup("data/test/Luxo.obj");
+	test3 = new Fighter();
+	test3->setup("data/test/CFA44.obj", "data/test/CFA44.tga");
 	test3->two_sided = true;
-	test3->local_matrix.setTranslation(0,100,100);
-	//test3->mesh->colors.push_back(Vector4(0, 0, 0, 1));
-	//test3->local_matrix.rotateLocal(90 * DEG2RAD, Vector3(1, 0, 0));
+	test3->onDemand();
+	test3->camera_center = Vector3(0, 9, 30);
+	test3->camera_eye = Vector3(0, 8, -20);
+	test3->local_matrix.setTranslation(0,100,-100);
 	world->root->addChildren(test3);
+
+	//PRUEBA DE IA
+	bosstest = world->boss;
 
 
 	/*	Codigo para composición de meshes, por ejemplo avion con misil.
@@ -138,12 +151,6 @@ void Game::init(void)
 //what to do when the image has to be draw
 void Game::render(void)
 {
-
-	//current_camera = ctrlPlayer->getCamera();
-
-
-	glClearColor(1.0, 0.0, 0.0, 1.0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//set the clear color (the background color)
 	glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -182,6 +189,8 @@ void Game::render(void)
 
 	bulletMng->render(current_camera);
 
+	renderDebug(current_camera);
+
     glDisable( GL_BLEND );
 
 	/*float time_per_frame = (getTime() - last);
@@ -206,6 +215,48 @@ void Game::update(double seconds_elapsed)
 
 
 	double speed = seconds_elapsed * 100; //the speed is defined by the seconds_elapsed so it goes constant
+
+
+	if (!world->boss->destroy_entity) {
+		//PRUEBAS PARA IA 
+		Camera* camera = current_camera;
+		//donde esta la camara
+		Vector3 target_position = camera->eye;
+
+		//orientarme donde esta la camara
+		Matrix44 global_matrix = bosstest->getGlobalMatrix();
+
+		Vector3 front = global_matrix.rotateVector(Vector3(0, 0, -1));
+		//vector direction que es desde el objetvivo(boss) hacia la camara 
+		Vector3 to_target = global_matrix.getTranslation() - target_position;
+
+		to_target.normalize();
+		front.normalize();
+
+		float angle = to_target.dot(front); //cos del angulo 
+		Vector3 axis_ws = to_target.cross(front);
+		Matrix44 global_inv = global_matrix;
+		global_inv.inverse();
+		Vector3 axis_ls = global_inv.rotateVector(axis_ws);
+
+		float dt = seconds_elapsed;
+		//cuando los dos vectores sean iguales vaya de 1-0 01
+		bosstest->local_matrix.rotateLocal((1.0 - angle) * dt, axis_ls);
+
+		//si tengo el avion inclinado 
+		//cuanto tiene que rotar para que se alineara
+		Vector3 top_ws = global_matrix.rotateVector(Vector3(0, 1, 0));
+		angle = top_ws.dot(Vector3(0, 1, 0));
+		bosstest->local_matrix.rotateLocal((1.0 - angle) * dt, Vector3(0, 0, 1));
+
+		Vector3 prueba = bosstest->local_matrix.frontVector();
+		//debug_lines.push_back(prueba);
+	}
+
+
+
+	//FIN PRUEBAS IA
+
 
 
 	if (current_camera == free_camera) {
@@ -245,6 +296,26 @@ void Game::update(double seconds_elapsed)
 	*/
 }
 
+void Game::renderDebug(Camera* camera)
+{
+	CollisionManager* mng = CollisionManager::getInstance();
+
+	//glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
+
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	if (mng->pointsOfCollision.vertices.size() > 1) {
+		Mesh mesh;
+		mesh.vertices = mng->pointsOfCollision.vertices;
+		glColor3f(0, 1, 0);
+		mesh.render(GL_POINTS);
+		//mng->pointsOfCollision.vertices.resize(0);
+	}
+	
+	glColor3f(1, 1, 1);
+	glEnable(GL_DEPTH_TEST);
+
+}
 //Keyboard event handler (sync input)
 void Game::onKeyPressed( SDL_KeyboardEvent event )
 {
@@ -263,6 +334,15 @@ void Game::onKeyPressed( SDL_KeyboardEvent event )
 				current_camera = ctrlPlayer->camera;
 				ctrlPlayer->active = true;
 			}
+			break;
+		case SDLK_1:
+			std::cout << "target test 3" << std::endl;
+			ctrlPlayer->target = test3;
+			break;
+		case SDLK_2:
+			std::cout << "target player" << std::endl;
+			ctrlPlayer->target = player;
+			break;
 	}
 }
 

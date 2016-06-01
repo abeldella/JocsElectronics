@@ -148,7 +148,6 @@ Entity* World::createEntity(Vector3 pos)
 {
 	EntityMesh* entity = new Fighter();
 	entity->setup("data/meshes/spitfire/spitfire.ASE", "data/textures/spitfire_color_spec.TGA", "data/meshes/spitfire/spitfire_low.ASE");
-	//entity->setup("data/meshes/boss/Arc170_2.obj", "data/textures/ARC170.tga");
 	entity->local_matrix.setTranslation(pos.x, pos.y, pos.z);
 	
 	return entity;
@@ -209,7 +208,7 @@ void World::createBoss(const char* name, const char* texture)
 
 	Fighter* boss = new Fighter();
 	boss->setup(n_filename.c_str(), t_filename.c_str());
-	boss->local_matrix.setTranslation(pos.x, pos.y, pos.z);
+	boss->local_matrix.setTranslation(0,100,-500);
 	
 	boss->dynamic_entity = true;
 	boss->onDemand();
