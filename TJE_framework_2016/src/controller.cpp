@@ -76,10 +76,10 @@ void Controller::update(float dt)
 		}
 
 		if (pad_state.button[Y_BUTTON]) {
-			target = game->test3;
+			setTarget(game->test3);
 		}
 		if (pad_state.button[X_BUTTON]) {
-			target = game->player;
+			setTarget(game->player);
 		}
 
 				
@@ -107,4 +107,64 @@ Camera* Controller::getCamera()
 	Fighter* fighter = (Fighter*)target;
 	fighter->updateCamera(camera);
 	return camera;
+}
+
+void Controller::setTarget(Entity* entity)
+{
+	target = entity;
+	CollisionManager::instance->player_entity = entity;
+}
+
+
+//---------------------------------------------------------------------------------------------------------
+ControllerIA::ControllerIA()
+{
+
+}
+
+ControllerIA::~ControllerIA()
+{
+
+}
+
+void ControllerIA::update(float dt)
+{
+	Game* game = Game::instance;
+	AntiAircraft* player = (AntiAircraft*)target;
+
+	//PRUEBAS PARA IA 
+	Camera* camera = game->current_camera;
+	//donde esta la camara
+	Vector3 target_position = camera->eye;
+
+	//orientarme donde esta la camara
+	Matrix44 global_matrix = player->getGlobalMatrix();
+
+	Vector3 front = global_matrix.rotateVector(Vector3(0, 0, -1));
+	//vector direction que es desde el objetvivo(boss) hacia la camara 
+	Vector3 to_target = global_matrix.getTranslation() - target_position;
+
+	to_target.normalize();
+	front.normalize();
+
+	float angle = to_target.dot(front); //cos del angulo 
+	Vector3 axis_ws = to_target.cross(front);
+	Matrix44 global_inv = global_matrix;
+	global_inv.inverse();
+	Vector3 axis_ls = global_inv.rotateVector(axis_ws);
+
+	//cuando los dos vectores sean iguales vaya de 1-0 0-1
+	player->local_matrix.rotateLocal((1.0 - angle) * dt, axis_ls);
+
+	//si tengo el avion inclinado 
+	//cuanto tiene que rotar para que se alineara
+	Vector3 top_ws = global_matrix.rotateVector(Vector3(0, 1, 0));
+	angle = top_ws.dot(Vector3(0, 1, 0));
+	player->local_matrix.rotateLocal((1.0 - angle) * dt, Vector3(0, 0, 1));
+
+	//Vector3 prueba = player->local_matrix.frontVector();
+	//debug_lines.push_back(prueba);
+
+	player->shoot();
+	
 }

@@ -74,10 +74,9 @@ public:
 	EntityCollider();
 	virtual void onDemand();
 	virtual void onBulletCollision();
-//on demand por si se castea preguntar si ya tiene collision sino rellenar
-	/*le dice a la mesh que genere un collision model y la mesh genera este collision model a su bola*/
-	/*virtual bool onCollision();
-	virtual bool onBulletCollision();*/
+
+	virtual void onCollision();
+	/*virtual bool onBulletCollision();*/
 	//OnDemand podemos llamar al createCollisionModel from Mesh
 };
 
@@ -104,9 +103,17 @@ public:
 	void updateCamera(Camera* camera);
 
 	Vector3 getCameraEye();
-
-
 };
 
+class AntiAircraft : public EntityCollider
+{
+public:
+	float tts;
+
+	AntiAircraft();
+
+	void shoot();
+	void update(float dt);
+};
 
 #endif

@@ -20,7 +20,8 @@ void CollisionManager::update(float dt)
 	if (bulletToStatic()) std::cout << "BulletToStatic Colisiona!!!" << std::endl;
 	if (bulletToDynamic()) std::cout << "BulletToDynamic Colisiona!!!" << std::endl;
 
-	
+	if (dynamicToStatic()) std::cout << "DynamicToStatic Colisiona!!!" << std::endl;
+	if (dynamicTodynamic()) std::cout << "DynamicToDynamic Colisiona!!!" << std::endl;
 }
 
 bool CollisionManager::bulletToStatic()
@@ -47,8 +48,9 @@ bool CollisionManager::bulletToStatic()
 			collision = sEntity->getGlobalMatrix() * collision;
 			pointsOfCollision.vertices.push_back(collision);
 
-			static_entities.erase(static_entities.begin() + i);
-			sEntity->onBulletCollision();
+			//static_entities.erase(static_entities.begin() + i);
+			bManager->bullets[j].ttl = 0;
+			//sEntity->onBulletCollision();
 			return true;
 		}
 	}
@@ -67,6 +69,8 @@ bool CollisionManager::bulletToDynamic()
 		for (int j = 0; j < MAX_BULLETS; j++) {
 
 			if (bManager->bullets[j].ttl <= 0) continue;
+			if (dEntity == bManager->bullets[j].owner)continue;
+
 			Vector3 pos = bManager->bullets[j].pos;
 			Vector3 last_pos = bManager->bullets[j].last_pos;
 			Vector3 director = pos - last_pos;
@@ -82,6 +86,48 @@ bool CollisionManager::bulletToDynamic()
 	}
 	return false;
 
+}
+
+bool CollisionManager::dynamicToStatic()
+{
+	for (int i = 0; i < dynamic_entities.size(); i++) {
+		for (int j = 0; j < static_entities.size(); j++) {
+
+			EntityCollider* dEntity = dynamic_entities[i];
+			EntityCollider* sEntity = static_entities[j];
+
+			dEntity->mesh->collision_model->setTransform(dEntity->getGlobalMatrix().m);
+
+			bool test = dEntity->mesh->collision_model->collision(sEntity->mesh->collision_model, -1, 0, sEntity->getGlobalMatrix().m);
+			
+			if (test) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+bool CollisionManager::dynamicTodynamic()
+{
+	for (int i = 0; i < dynamic_entities.size(); i++) {
+		for (int j = i+1; j < dynamic_entities.size(); j++) {
+
+			EntityCollider* dEntity1 = dynamic_entities[i];
+			EntityCollider* dEntity2 = dynamic_entities[j];
+
+			if (dEntity1 == player_entity)continue;
+
+			dEntity1->mesh->collision_model->setTransform(dEntity1->getGlobalMatrix().m);
+
+			bool test = dEntity1->mesh->collision_model->collision(dEntity2->mesh->collision_model, -1, 0, dEntity2->getGlobalMatrix().m);
+
+			if (test) {
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 void CollisionManager::setDynamic(EntityCollider* entity)

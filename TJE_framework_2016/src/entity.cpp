@@ -218,6 +218,12 @@ void EntityCollider::onBulletCollision()
 	destroyEntity();
 }
 
+void EntityCollider::onCollision()
+{
+	
+}
+
+
 //---------------------------------------------------------------------------------------------------------
 Fighter::Fighter()
 {
@@ -273,10 +279,10 @@ void Fighter::shoot()
 		//Falta tener en cuenta la velocidad del avion
 		Vector3 vel = global_matrix.rotateVector(Vector3(0, 0, 1000));
 		Vector3 pos = global_matrix * Vector3(2.1, -0.55, 0.6);
-		pos = pos + velocity;
+		//pos = pos + velocity;
 		bulletMng->createBullet(pos, vel, MAX_TTL, this);
 		pos = global_matrix * Vector3(-2.1, -0.55, 0.6);
-		pos = pos + velocity;
+		//pos = pos + velocity;
 		bulletMng->createBullet(pos, vel, MAX_TTL, this);
 
 		tts = MAX_TTS;
@@ -312,4 +318,36 @@ void Fighter::accelerate()
 	tta = 10;
 	//camera_info.z = 0.9;
 	accelerator = true;
+}
+
+//---------------------------------------------------------------------------------------------------------
+AntiAircraft::AntiAircraft()
+{
+	tts = MAX_TTS;
+
+}
+
+void AntiAircraft::shoot()
+{
+	if (tts <= 0) {
+		BulletMaganer* bulletMng = BulletMaganer::getInstance();
+		Matrix44 global_matrix = getGlobalMatrix();
+		//velocidad de salida balas
+		Vector3 vel = global_matrix.rotateVector(Vector3(0, 0, 1000));
+		Vector3 pos = global_matrix * Vector3(12, 30, 15);
+		bulletMng->createBullet(pos, vel, MAX_TTL, this);
+		pos = global_matrix * Vector3(-12, 30, 15);
+		bulletMng->createBullet(pos, vel, MAX_TTL, this);
+
+		tts = MAX_TTS ;
+	}
+
+}
+
+void AntiAircraft::update(float dt)
+{
+
+	if (tts > 0)
+		tts -= dt;
+
 }

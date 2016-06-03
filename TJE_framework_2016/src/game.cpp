@@ -14,6 +14,9 @@ Game* Game::instance = NULL;
 
 std::vector< Vector3 > debug_lines;
 
+AntiAircraft* torreta;
+ControllerIA* ctrlIA;
+
 Game::Game(SDL_Window* window)
 {
 	this->window = window;
@@ -72,6 +75,7 @@ void Game::init(void)
 
 	//Avion para testear delete
 	player = (Fighter*)world->createEntity(Vector3(0,100,0));
+	player->dynamic_entity = true;
 	player->onDemand();
 	world->root->addChildren(player);
 
@@ -102,6 +106,7 @@ void Game::init(void)
 		pos.random(1000);
 
 		test->local_matrix.setTranslation(pos.x, pos.y, pos.z);
+		test->dynamic_entity = true;
 		test->onDemand();
 		world->root->addChildren(test);
 	}
@@ -126,6 +131,17 @@ void Game::init(void)
 
 	//PRUEBA DE IA
 	bosstest = world->boss;
+
+
+	torreta = new AntiAircraft();
+	torreta->setup("data/meshes/torreta/sci_fi_turret.obj", "data/meshes/torreta/sci_fi_turret.tga");
+	torreta->onDemand();
+	torreta->name = "Torreta";
+	torreta->local_matrix.setTranslation(0, -10, -200);
+	world->root->addChildren(torreta);
+
+	ctrlIA = new ControllerIA();
+	ctrlIA->target = torreta;
 
 
 	/*	Codigo para composición de meshes, por ejemplo avion con misil.
@@ -213,11 +229,14 @@ void Game::update(double seconds_elapsed)
 
 	bulletMng->update(seconds_elapsed * time_scale);
 
+	//controller IA Torreta
+	ctrlIA->update(seconds_elapsed);
 
 	double speed = seconds_elapsed * 100; //the speed is defined by the seconds_elapsed so it goes constant
 
 
 	if (!world->boss->destroy_entity) {
+
 		//PRUEBAS PARA IA 
 		Camera* camera = current_camera;
 		//donde esta la camara

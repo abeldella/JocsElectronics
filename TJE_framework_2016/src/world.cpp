@@ -92,7 +92,7 @@ Entity* World::factory(const char* filename)
 void World::createSkybox()
 {
 	skybox = new EntityMesh();
-	skybox->setup("data/meshes/skybox/cubemap.ASE", "data/prueba3.tga");
+	skybox->setup("data/meshes/skybox/cubemap.ASE", "data/room.tga");
 	//skybox->setup("data/meshes/skybox/cubemap.ASE", "data/textures/cielo.TGA");
 	//skybox->local_matrix.setTranslation(0, skybox->mesh->halfSize.y, 0);
 	//skybox->local_matrix.setScale(40, 50, 40);
@@ -191,10 +191,7 @@ void World::createTerrain()
 	floor->local_matrix.setTranslation(0,-10,0);
 	root->addChildren(floor);
 	*/
-	EntityMesh* sea = new EntityMesh();
-	sea->setup("data/meshes/agua.ASE", "data/textures/agua.TGA");
-	sea->local_matrix.setTranslation(0, 0, 0);
-	//root->addChildren(sea);
+
 }
 
 void World::createBoss(const char* name, const char* texture)

@@ -3,7 +3,7 @@
 
 #include "framework.h"
 #define MAX_BULLETS 1024
-#define MAX_TTL 3
+#define MAX_TTL 2
 
 class Camera;
 

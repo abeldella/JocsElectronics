@@ -14,9 +14,22 @@ public:
 
 	Controller();
 	virtual ~Controller();
-	void update(float dt);
+	virtual void update(float dt);
+
+	void setTarget(Entity* entity);
 
 	Camera* getCamera();
+};
+
+
+class ControllerIA : public Controller
+{
+public:
+	ControllerIA();
+	~ControllerIA();
+
+	void update(float dt);
+
 };
 
 #endif

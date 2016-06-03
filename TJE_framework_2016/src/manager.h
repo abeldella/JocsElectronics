@@ -5,6 +5,7 @@
 #include "bullets.h"
 #include "mesh.h"
 
+class Entity;
 class EntityCollider;
 
 //COLLISIONMANAGER CLASS
@@ -29,6 +30,8 @@ public:
 
 	Mesh pointsOfCollision;
 
+	Entity* player_entity;
+
 private:
 	CollisionManager();
 	//vector dinamico y estatico
@@ -36,6 +39,7 @@ private:
 	std::vector< EntityCollider* > dynamic_entities;
 
 	BulletMaganer* bManager;
+
 };
 
 
