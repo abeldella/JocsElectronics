@@ -38,7 +38,8 @@ enum XBOXpad
 	LEFT_ANALOG_Y = 1,
 	RIGHT_ANALOG_X = 2,
 	RIGHT_ANALOG_Y = 3,
-	TRIGGERS = 4, //both triggers share an axis (positive is right, negative is left trigger)
+	TRIGGERS_LT = 4,
+	TRIGGERS_RT = 5,//both triggers share an axis (positive is right, negative is left trigger)
 
 	//buttons
 	UP_BUTTON = 0,

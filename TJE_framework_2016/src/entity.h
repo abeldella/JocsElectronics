@@ -93,6 +93,7 @@ public:
 
 	float tta; //time to accelerate
 	float tts; //time between shoot
+	float start;
 	bool accelerator;
 
 	Fighter();

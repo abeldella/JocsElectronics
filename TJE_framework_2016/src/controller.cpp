@@ -48,6 +48,7 @@ void Controller::update(float dt)
 	if (pad) {
 		JoystickState pad_state = getJoystickState(pad);
 
+
 		if (abs(pad_state.axis[LEFT_ANALOG_Y]) > 0.1)
 			player->rotate(90 * pad_state.axis[LEFT_ANALOG_Y] * dt, Vector3(1, 0, 0));
 		if (abs(pad_state.axis[LEFT_ANALOG_X]) > 0.1)
@@ -61,20 +62,20 @@ void Controller::update(float dt)
 		if (abs(pad_state.axis[RIGHT_ANALOG_Y]) > 0.1) {
 			player->camera_info.z = pad_state.axis[RIGHT_ANALOG_Y];
 		}
-		//else player->camera_info.z = 0;
+		else
+			player->camera_info.z = 0;
+		
+		if (pad_state.button[RIGHT_ANALOG_BUTTON]) player->rotate(30 * dt, Vector3(0, 1, 0));
+		if (pad_state.button[LEFT_ANALOG_BUTTON]) player->rotate(-30 * dt, Vector3(0, 1, 0));
 
-		if (pad_state.button[RIGHT_ANALOG_BUTTON])
-		{
-			//std::cout << "RAB shooting " << pad_state.button[RIGHT_ANALOG_BUTTON] << std::endl;
-			player->shoot();
-		}
+		if (pad_state.axis[TRIGGERS_RT] > 0) player->shoot();
+		
 
 		if (pad_state.button[BACK_BUTTON]) exit(0);
 		
-		if (pad_state.button[RB_BUTTON]) {
-			player->accelerate();			
-		}
+		if (pad_state.button[RB_BUTTON]) player->accelerate();			
 
+		//Change camera target
 		if (pad_state.button[Y_BUTTON]) {
 			setTarget(game->test3);
 		}

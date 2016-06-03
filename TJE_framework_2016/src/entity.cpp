@@ -227,9 +227,10 @@ void EntityCollider::onCollision()
 //---------------------------------------------------------------------------------------------------------
 Fighter::Fighter()
 {
-	speed = 0.5;	
+	speed = 100;	
 	tta = 5;
 	tts = MAX_TTS;
+	start = 10;
 	camera_info.set(0, 0, 0);
 	accelerator = false;
 
@@ -241,33 +242,36 @@ Fighter::Fighter()
 
 void Fighter::update(float dt)
 {
-	//move(Vector3(0, 0, speed * dt));
-	local_matrix.traslate(velocity.x, velocity.y, velocity.z);
+	//Acceleration control
+	if (accelerator) {
+		tta -= dt;
+		if (tta <= 0) {
+			speed = 100;
+			camera_info.z = 0;
+			accelerator = false;
+		}
+	}
+	if (tts > 0)
+		tts -= dt;
+	start -= dt;
+
+	if (start > 0)return;
+	move(Vector3(0, 0, speed * dt));
+	/*local_matrix.traslate(velocity.x, velocity.y, velocity.z);
 	//Hacia donde empuja el avion
 	Vector3 impulse = global_matrix.rotateVector(Vector3(0, 0, speed));
+	impulse = Vector3(impulse.x * 10, impulse.y * 10, impulse.z * 10);
 	velocity = velocity + impulse * dt;
 	//Gravedad 
 	velocity = velocity + Vector3(0, -0.05 * dt, 0);
+	*/
 
 	Vector3 pos = local_matrix.getTranslation();
 	if (pos.y < 0) {
 		local_matrix.m[13] = 0;
 	}
-	velocity = velocity - velocity * 0.006;
-
-	//Acceleration control
-	if (accelerator) {
-		tta -= dt;
-		if (tta <= 0) {
-			speed = 0.5;
-			camera_info.z = 0;
-			accelerator = false;
-		}
-	}
-
-	if( tts > 0) 
-		tts -= dt;
-
+	//velocity = velocity - velocity * 0.006;
+	
 }
 
 
@@ -314,9 +318,8 @@ void Fighter::updateCamera(Camera* camera)
 
 void Fighter::accelerate()
 {
-	speed = 5;
+	speed = 150;
 	tta = 10;
-	//camera_info.z = 0.9;
 	accelerator = true;
 }
 

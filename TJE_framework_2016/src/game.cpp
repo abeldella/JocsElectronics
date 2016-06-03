@@ -74,7 +74,7 @@ void Game::init(void)
 	fog_shader->setVector3("u_fog_color", fog_color);*/
 
 	//Avion para testear delete
-	player = (Fighter*)world->createEntity(Vector3(0,100,0));
+	player = (Fighter*)world->createEntity(Vector3(0,100,-1000));
 	player->dynamic_entity = true;
 	player->onDemand();
 	world->root->addChildren(player);
@@ -126,7 +126,7 @@ void Game::init(void)
 	test3->onDemand();
 	test3->camera_center = Vector3(0, 9, 30);
 	test3->camera_eye = Vector3(0, 8, -20);
-	test3->local_matrix.setTranslation(0,100,-100);
+	test3->local_matrix.setTranslation(0,100,-1500);
 	world->root->addChildren(test3);
 
 	//PRUEBA DE IA
@@ -136,7 +136,7 @@ void Game::init(void)
 	torreta = new AntiAircraft();
 	torreta->setup("data/meshes/torreta/sci_fi_turret.obj", "data/meshes/torreta/sci_fi_turret.tga");
 	torreta->onDemand();
-	torreta->name = "Torreta";
+	torreta->name = "sci_fi_turret";
 	torreta->local_matrix.setTranslation(0, -10, -200);
 	world->root->addChildren(torreta);
 
