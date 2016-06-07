@@ -91,14 +91,15 @@ Entity* World::factory(const char* filename)
 
 void World::createSkybox()
 {
-	skybox = new EntityMesh();
-	skybox->setup("data/meshes/skybox/cubemap.ASE", "data/room.tga");
+	skybox = new EntityCollider();
+	skybox->setup("data/meshes/skybox/cubemap2.OBJ", "data/room.tga");
 	//skybox->setup("data/meshes/skybox/cubemap.ASE", "data/textures/cielo.TGA");
 	//skybox->local_matrix.setTranslation(0, skybox->mesh->halfSize.y, 0);
 	//skybox->local_matrix.setScale(40, 50, 40);
-	skybox->local_matrix.setScale(20, 25, 20);
+	//skybox->local_matrix.setScale(12, 15, 12);
 	skybox->frustum_test = false;
-
+	skybox->onDemand();
+	skybox->local_matrix.setTranslation(0, 400, 0);
 	/*for (int i = -4; i < 5; i++) {
 		for (int j = -4; j < 5; j++) {
 			Mesh* plane = new Mesh();
@@ -128,7 +129,7 @@ void World::createFighter()
 		EntityMesh* entity = new EntityMesh();
 		entity->setup("data/meshes/spitfire/spitfire.ASE", "data/textures/spitfire_color_spec.TGA", "data/meshes/spitfire/spitfire_low.ASE");
 		Vector3 pos;
-		pos.random(1000);
+		pos.random(600);
 		entity->local_matrix.setTranslation(pos.x, pos.y, pos.z);
 		root->addChildren(entity);
 	}
@@ -172,7 +173,7 @@ void World::createTerrain()
 		for (int j = 0; j < 1; j++) {
 			Mesh* plane = new Mesh();
 			//plane->createPlane(700);
-			plane->createPlane(1000);
+			plane->createPlane(600);
 			EntityMesh* floor = new EntityMesh();
 			floor->mesh = plane;
 			//floor->texture = Texture::get("data/TilesPlain0136_1_S.TGA");
@@ -205,7 +206,7 @@ void World::createBoss(const char* name, const char* texture)
 
 	Fighter* boss = new Fighter();
 	boss->setup(n_filename.c_str(), t_filename.c_str());
-	boss->local_matrix.setTranslation(0,100,-500);
+	boss->local_matrix.setTranslation(0,100, 200);
 	
 	boss->dynamic_entity = true;
 	boss->onDemand();

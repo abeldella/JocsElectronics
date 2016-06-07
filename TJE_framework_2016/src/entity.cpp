@@ -230,6 +230,7 @@ Fighter::Fighter()
 	speed = 100;	
 	tta = 5;
 	tts = MAX_TTS;
+	ttsc = MAX_TTS;
 	start = 10;
 	camera_info.set(0, 0, 0);
 	accelerator = false;
@@ -289,7 +290,7 @@ void Fighter::shoot()
 		//pos = pos + velocity;
 		bulletMng->createBullet(pos, vel, MAX_TTL, this);
 
-		tts = MAX_TTS;
+		tts = ttsc;
 	}
 
 }
@@ -321,6 +322,11 @@ void Fighter::accelerate()
 	speed = 150;
 	tta = 10;
 	accelerator = true;
+}
+
+void Fighter::setTimetoShoot(float time)
+{
+	ttsc = time;
 }
 
 //---------------------------------------------------------------------------------------------------------

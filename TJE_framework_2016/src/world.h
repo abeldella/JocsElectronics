@@ -19,7 +19,7 @@ public:
 	}
 
 	Entity* root;
-	EntityMesh* skybox;
+	EntityCollider* skybox;
 	std::vector< Entity* > entities;
 
 	//Entidad boss para testear delete

@@ -58,11 +58,10 @@ public:
 	BulletMaganer* bulletMng;
 	CollisionManager* collisionMng;
 
-	//PRUEBAS DE IA
-	Fighter* bosstest;
-
 	void renderDebug(Camera* camera);
 	Fighter* test3;
+
+	std::vector< Controller* > controllers;
 };
 
 

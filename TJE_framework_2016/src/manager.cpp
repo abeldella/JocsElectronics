@@ -5,6 +5,8 @@
 #include "camera.h"
 #include "game.h"
 
+#include "extra\coldet\coldet.h"
+
 
 CollisionManager* CollisionManager::instance = NULL;
 
@@ -49,7 +51,7 @@ bool CollisionManager::bulletToStatic()
 			pointsOfCollision.vertices.push_back(collision);
 
 			//static_entities.erase(static_entities.begin() + i);
-			bManager->bullets[j].ttl = 0;
+			//bManager->bullets[j].ttl = 0;
 			//sEntity->onBulletCollision();
 			return true;
 		}
@@ -60,6 +62,7 @@ bool CollisionManager::bulletToStatic()
 bool CollisionManager::bulletToDynamic()
 {
 	bManager = BulletMaganer::getInstance();
+	//IDEA: poner un vector de destriubles para evitar eliminar cosas mientras se itera 
 
 	for (int i = 0; i < dynamic_entities.size(); i++) {
 
@@ -75,17 +78,21 @@ bool CollisionManager::bulletToDynamic()
 			Vector3 last_pos = bManager->bullets[j].last_pos;
 			Vector3 director = pos - last_pos;
 
+			//Matrix44 global = dEntity->getGlobalMatrix();
+			//Vector3 center = global * dEntity->mesh->center;
+			//Vector3 point;
+			//float radius = dEntity->mesh->halfSize.length();
+			//if ( SphereRayCollision(center.v, radius, last_pos.v, pos.v, point.v ) == false)continue;
+
 			if (dEntity->mesh->collision_model->rayCollision(last_pos.v, director.v, true) == false) continue;
 
-			//si destruimos la entidad tenemos que sacarla del vector de entidades dinamicas
 			dynamic_entities.erase(dynamic_entities.begin() + i);
-
 			dEntity->onBulletCollision();
 			return true;
 		}
 	}
-	return false;
 
+	return false;
 }
 
 bool CollisionManager::dynamicToStatic()
@@ -101,6 +108,16 @@ bool CollisionManager::dynamicToStatic()
 			bool test = dEntity->mesh->collision_model->collision(sEntity->mesh->collision_model, -1, 0, sEntity->getGlobalMatrix().m);
 			
 			if (test) {
+
+				//Desplazamiento en caso de choque PRUEBA
+				Game* game = Game::instance;
+				Vector3 front = dEntity->getGlobalMatrix().rotateVector(Vector3(0, 1, 0));
+				//No usar la camara porque se transportan a nosotros 
+				//Camera* camera = game->current_camera;
+
+				Vector3 position = dEntity->global_matrix.getTranslation();
+				dEntity->local_matrix.setTranslation(position.x - 5, position.y - 5, position.z - 5);
+				dEntity->local_matrix.rotateLocal(0.60, front);
 				return true;
 			}
 		}

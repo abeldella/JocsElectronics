@@ -120,6 +120,7 @@ void Controller::setTarget(Entity* entity)
 //---------------------------------------------------------------------------------------------------------
 ControllerIA::ControllerIA()
 {
+	dynamic_controller = false;
 
 }
 
@@ -131,7 +132,8 @@ ControllerIA::~ControllerIA()
 void ControllerIA::update(float dt)
 {
 	Game* game = Game::instance;
-	AntiAircraft* player = (AntiAircraft*)target;
+	Fighter* player = (Fighter*)target;
+
 
 	//PRUEBAS PARA IA 
 	Camera* camera = game->current_camera;
@@ -154,6 +156,7 @@ void ControllerIA::update(float dt)
 	global_inv.inverse();
 	Vector3 axis_ls = global_inv.rotateVector(axis_ws);
 
+	//axis_ls = Vector3(0, axis_ls.y, 0);
 	//cuando los dos vectores sean iguales vaya de 1-0 0-1
 	player->local_matrix.rotateLocal((1.0 - angle) * dt, axis_ls);
 

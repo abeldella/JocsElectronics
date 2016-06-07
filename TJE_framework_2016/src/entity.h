@@ -93,23 +93,25 @@ public:
 
 	float tta; //time to accelerate
 	float tts; //time between shoot
+	float ttsc; //time between shoot custom
 	float start;
 	bool accelerator;
 
 	Fighter();
 
 	void update(float dt);
-	void shoot();
+	virtual void shoot();
 	void accelerate();
 	void updateCamera(Camera* camera);
+
+	void setTimetoShoot(float time);
 
 	Vector3 getCameraEye();
 };
 
-class AntiAircraft : public EntityCollider
+class AntiAircraft : public Fighter
 {
 public:
-	float tts;
 
 	AntiAircraft();
 

@@ -14,9 +14,6 @@ Game* Game::instance = NULL;
 
 std::vector< Vector3 > debug_lines;
 
-AntiAircraft* torreta;
-ControllerIA* ctrlIA;
-
 Game::Game(SDL_Window* window)
 {
 	this->window = window;
@@ -74,7 +71,7 @@ void Game::init(void)
 	fog_shader->setVector3("u_fog_color", fog_color);*/
 
 	//Avion para testear delete
-	player = (Fighter*)world->createEntity(Vector3(0,100,-1000));
+	player = (Fighter*)world->createEntity(Vector3(0,100,-200));
 	player->dynamic_entity = true;
 	player->onDemand();
 	world->root->addChildren(player);
@@ -94,7 +91,7 @@ void Game::init(void)
 
 	EntityMesh* bed = new EntityMesh();
 	bed->setup("data/bed.obj", "data/bed.tga");
-	bed->local_matrix.setTranslation(0, -10, 1000 - (bed->mesh->center.y + 50));
+	bed->local_matrix.setTranslation(0, -10, 600 - (bed->mesh->center.y + 50));
 	world->root->addChildren(bed);
 
 	for (int i = 0; i < 5; i++) {
@@ -103,7 +100,7 @@ void Game::init(void)
 		test->two_sided = true;
 		
 		Vector3 pos;
-		pos.random(1000);
+		pos.random(600);
 
 		test->local_matrix.setTranslation(pos.x, pos.y, pos.z);
 		test->dynamic_entity = true;
@@ -114,7 +111,7 @@ void Game::init(void)
 	EntityCollider* test2 = new EntityCollider();
 	test2->setup("data/test/ok1/door.obj", "data/test/ok1/door.tga");
 	test2->two_sided = true;
-	test2->local_matrix.setTranslation(1005, -10, -1000 - (test2->mesh->center.x * 4));
+	test2->local_matrix.setTranslation(605, -10, -600 - (test2->mesh->center.x * 4));
 	test2->local_matrix.rotateLocal(90 * DEG2RAD, Vector3(0, 1, 0));
 	test2->onDemand();
 	world->root->addChildren(test2);
@@ -126,24 +123,29 @@ void Game::init(void)
 	test3->onDemand();
 	test3->camera_center = Vector3(0, 9, 30);
 	test3->camera_eye = Vector3(0, 8, -20);
-	test3->local_matrix.setTranslation(0,100,-1500);
+	test3->local_matrix.setTranslation(0,100,-250);
 	world->root->addChildren(test3);
 
-	//PRUEBA DE IA
-	bosstest = world->boss;
 
-
-	torreta = new AntiAircraft();
+	AntiAircraft* torreta = new AntiAircraft();
 	torreta->setup("data/meshes/torreta/sci_fi_turret.obj", "data/meshes/torreta/sci_fi_turret.tga");
+	torreta->dynamic_entity = false; //La pongo como no dinamica para testear pero debe ser dinamica para poder destruirla
 	torreta->onDemand();
 	torreta->name = "sci_fi_turret";
-	torreta->local_matrix.setTranslation(0, -10, -200);
+	torreta->local_matrix.setTranslation(-200, -10, -100);
 	world->root->addChildren(torreta);
 
-	ctrlIA = new ControllerIA();
-	ctrlIA->target = torreta;
+	ControllerIA* ctrlTorreta = new ControllerIA();
+	ctrlTorreta->target = torreta;
 
+	ControllerIA* ctrlBoss = new ControllerIA();
+	world->boss->setTimetoShoot(1.0);
+	ctrlBoss->target = world->boss;
 
+//	controllers.push_back(ctrlTorreta);
+	ctrlBoss->dynamic_controller = true;
+	controllers.push_back(ctrlBoss);
+	
 	/*	Codigo para composición de meshes, por ejemplo avion con misil.
 		if (prev_entity) {
 		prev_entity->addChildren(entity);
@@ -216,6 +218,10 @@ void Game::render(void)
 	drawText(2, 2, std::string("FPS: ") + std::to_string(int(this->fps)), this->fps > 30 ? Vector3(1, 1, 1) : Vector3(1, 0, 0), 2);
 	drawText(2, 20, std::string("DIPs: ") + std::to_string(Mesh::s_num_meshes_rendered), this->fps > 30 ? Vector3(1, 1, 1) : Vector3(1, 0, 0), 2);
 	last = getTime();*/
+	
+	
+	std::string posCamera = std::string("Camera pos: ") + std::to_string(int(current_camera->eye.x)) + std::string(" ") + std::to_string(int(current_camera->eye.y)) + std::string(" ") + std::to_string(int(current_camera->eye.z));
+	drawText(2, 2, posCamera, Vector3(1, 1, 1), 2);
 
 	//swap between front buffer and back buffer
 	SDL_GL_SwapWindow(this->window);
@@ -230,51 +236,16 @@ void Game::update(double seconds_elapsed)
 	bulletMng->update(seconds_elapsed * time_scale);
 
 	//controller IA Torreta
-	ctrlIA->update(seconds_elapsed);
+	for (int i = 0; i < controllers.size(); i++) {
+		if (controllers[i]->target->destroy_entity)continue;
+		controllers[i]->update(seconds_elapsed);
+	}
+	//FIN PRUEBAS IA
+
 
 	double speed = seconds_elapsed * 100; //the speed is defined by the seconds_elapsed so it goes constant
 
-
-	if (!world->boss->destroy_entity) {
-
-		//PRUEBAS PARA IA 
-		Camera* camera = current_camera;
-		//donde esta la camara
-		Vector3 target_position = camera->eye;
-
-		//orientarme donde esta la camara
-		Matrix44 global_matrix = bosstest->getGlobalMatrix();
-
-		Vector3 front = global_matrix.rotateVector(Vector3(0, 0, -1));
-		//vector direction que es desde el objetvivo(boss) hacia la camara 
-		Vector3 to_target = global_matrix.getTranslation() - target_position;
-
-		to_target.normalize();
-		front.normalize();
-
-		float angle = to_target.dot(front); //cos del angulo 
-		Vector3 axis_ws = to_target.cross(front);
-		Matrix44 global_inv = global_matrix;
-		global_inv.inverse();
-		Vector3 axis_ls = global_inv.rotateVector(axis_ws);
-
-		float dt = seconds_elapsed;
-		//cuando los dos vectores sean iguales vaya de 1-0 01
-		bosstest->local_matrix.rotateLocal((1.0 - angle) * dt, axis_ls);
-
-		//si tengo el avion inclinado 
-		//cuanto tiene que rotar para que se alineara
-		Vector3 top_ws = global_matrix.rotateVector(Vector3(0, 1, 0));
-		angle = top_ws.dot(Vector3(0, 1, 0));
-		bosstest->local_matrix.rotateLocal((1.0 - angle) * dt, Vector3(0, 0, 1));
-
-		Vector3 prueba = bosstest->local_matrix.frontVector();
-		//debug_lines.push_back(prueba);
-	}
-
-
-
-	//FIN PRUEBAS IA
+	
 
 
 

@@ -25,6 +25,7 @@ public:
 class ControllerIA : public Controller
 {
 public:
+	bool dynamic_controller;
 	ControllerIA();
 	~ControllerIA();
 
