@@ -4,6 +4,7 @@
 #include "framework.h"
 #include <vector>
 #include "entity.h"
+#include "controller.h"
 
 class World
 {
@@ -22,6 +23,8 @@ public:
 	EntityCollider* skybox;
 	std::vector< Entity* > entities;
 
+	std::vector< Controller* > controllers;
+
 	//Entidad boss para testear delete
 	Fighter* boss;
 
@@ -31,11 +34,14 @@ public:
 	Entity* factory(const char* filename);
 
 	void createSkybox();
-	void createFighter();
+	
 	Entity* createEntity(Vector3 pos);
-	void docCreateEntity(Vector3 pos);
+
 	void createTerrain();
-	void createBoss(const char* name, const char* texture);
+
+	void createFighter(const char* name, const char* texture, Vector3 pos);
+	void createBoss(const char* name, const char* texture, Vector3 pos);
+	void docCreateEntity(const char* name, const char* texture, Vector3 pos, int angle, Vector3 rotation);
 
 };
 

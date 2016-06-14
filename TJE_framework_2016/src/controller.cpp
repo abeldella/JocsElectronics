@@ -62,13 +62,18 @@ void Controller::update(float dt)
 		if (abs(pad_state.axis[RIGHT_ANALOG_Y]) > 0.1) {
 			player->camera_info.z = pad_state.axis[RIGHT_ANALOG_Y];
 		}
-		else
-			player->camera_info.z = 0;
+		//else
+			//player->camera_info.z = 0;
 		
 		if (pad_state.button[RIGHT_ANALOG_BUTTON]) player->rotate(30 * dt, Vector3(0, 1, 0));
 		if (pad_state.button[LEFT_ANALOG_BUTTON]) player->rotate(-30 * dt, Vector3(0, 1, 0));
 
-		if (pad_state.axis[TRIGGERS_RT] > 0) player->shoot();
+		if (pad_state.axis[TRIGGERS_RT] > 0) {
+			player->shoot();
+			player->camera_info.z -= (0.01*cos(game->time * 25 * PI));
+			player->camera_info.z -= 0.1 * dt;
+		}
+		else if (pad_state.axis[TRIGGERS_RT] == -1) player->camera_info.z = 0;
 		
 
 		if (pad_state.button[BACK_BUTTON]) exit(0);
@@ -83,8 +88,7 @@ void Controller::update(float dt)
 			setTarget(game->player);
 		}
 
-				
-		
+
 		/*CONTROL DE TRIGGERS
 		left = +max( 0.0f, pad_state.button[TRIGGERS] );
 		right = -max( 0.0f, pad_state.button[TRIGGERS] );
@@ -121,6 +125,16 @@ void Controller::setTarget(Entity* entity)
 ControllerIA::ControllerIA()
 {
 	dynamic_controller = false;
+	attack = false;
+
+	checkpoint = 0;
+	s_checkpoints.push_back(Vector3(-185, 485, 385));
+	s_checkpoints.push_back(Vector3(-324, 376, -167));
+	s_checkpoints.push_back(Vector3(-415, 13, -433));
+	s_checkpoints.push_back(Vector3(-20, 248, -485));
+	s_checkpoints.push_back(Vector3(365, 450, -420));
+	s_checkpoints.push_back(Vector3(403, 487, 111));
+	s_checkpoints.push_back(Vector3(195, 400, 432));
 
 }
 
@@ -133,18 +147,33 @@ void ControllerIA::update(float dt)
 {
 	Game* game = Game::instance;
 	Fighter* player = (Fighter*)target;
-
-
 	//PRUEBAS PARA IA 
 	Camera* camera = game->current_camera;
-	//donde esta la camara
-	Vector3 target_position = camera->eye;
+	//orientarme donde esta el objetivo
+	Matrix44 global_matrix = player->getGlobalMatrix();	
+	Vector3 target_position = s_checkpoints[checkpoint];
 
-	//orientarme donde esta la camara
-	Matrix44 global_matrix = player->getGlobalMatrix();
+	//std::cout << "distanceCam " << global_matrix.getTranslation().distance(camera->eye) << std::endl;
+	if (global_matrix.getTranslation().distance(camera->eye) < 250){
+		target_position = camera->eye;
+		attack = true;
+	}
+	else attack = false;
+
+
+	//std::cout << "distance " << global_matrix.getTranslation().distance(target_position) << std::endl;
+	//std::cout << "s_checkpoint " << s_checkpoints.size() << " check " << checkpoint << std::endl;
+
+	if (global_matrix.getTranslation().distance(target_position) < 100) {
+		if (s_checkpoints.size()-1 == checkpoint) {
+			checkpoint = 0;
+		}
+		else checkpoint++;
+		return;
+	}
 
 	Vector3 front = global_matrix.rotateVector(Vector3(0, 0, -1));
-	//vector direction que es desde el objetvivo(boss) hacia la camara 
+	//vector direction que es desde la entidad hacia el objetivo 
 	Vector3 to_target = global_matrix.getTranslation() - target_position;
 
 	to_target.normalize();
@@ -156,7 +185,6 @@ void ControllerIA::update(float dt)
 	global_inv.inverse();
 	Vector3 axis_ls = global_inv.rotateVector(axis_ws);
 
-	//axis_ls = Vector3(0, axis_ls.y, 0);
 	//cuando los dos vectores sean iguales vaya de 1-0 0-1
 	player->local_matrix.rotateLocal((1.0 - angle) * dt, axis_ls);
 
@@ -168,7 +196,7 @@ void ControllerIA::update(float dt)
 
 	//Vector3 prueba = player->local_matrix.frontVector();
 	//debug_lines.push_back(prueba);
-
-	player->shoot();
+	//std::cout << "targe " << target_position.v << " player " << camera->eye.v << std::endl;
+	if(attack) player->shoot();
 	
 }

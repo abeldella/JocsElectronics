@@ -5,6 +5,7 @@
 #include "rendertotexture.h"
 #include "shader.h"
 #include "entity.h"
+#include "stage.h"
 #include <cmath>
 
 //some globals
@@ -13,6 +14,9 @@ RenderToTexture* rt = NULL;
 Game* Game::instance = NULL;
 
 std::vector< Vector3 > debug_lines;
+
+StageDelegator* current_stage = new StageDelegator();
+
 
 Game::Game(SDL_Window* window)
 {
@@ -31,6 +35,7 @@ Game::Game(SDL_Window* window)
 	world = NULL;
 	bulletMng = NULL;
 	pad = NULL;
+
 }
 
 //Here we have already GL working, so we can create meshes and textures
@@ -63,7 +68,7 @@ void Game::init(void)
 	free_camera->setPerspective(70,window_width/(float)window_height,0.1,25000); //set the projection, we want to be perspective
 	current_camera = free_camera;
 
-	world->factory("data/worlds/world_test.txt");
+//	world->factory("data/worlds/world_test.txt");
 
 	//Cargamos Meshes
 	/*Shader* fog_shader = Shader::load("data/shaders/fog.vs", "data/.-------");
@@ -71,24 +76,25 @@ void Game::init(void)
 	fog_shader->setVector3("u_fog_color", fog_color);*/
 
 	//Avion para testear delete
-	player = (Fighter*)world->createEntity(Vector3(0,100,-200));
+/*	player = (Fighter*)world->createEntity(Vector3(0,100,-200));
 	player->dynamic_entity = true;
 	player->onDemand();
-	world->root->addChildren(player);
+	world->root->addChildren(player);*/
 
-	player_camera = new Camera();
+/*	player_camera = new Camera();
 	player_camera->setPerspective(70, window_width / (float)window_height, 0.1, 10000);
 	player_camera->lookAt(player->getGlobalMatrix() * Vector3(0, 2, -5), player->getGlobalMatrix() *  Vector3(0, 0, 50), Vector3(0, 1, 0));
-	
+*/
 
 
-	ctrlPlayer = new Controller();
+/*	ctrlPlayer = new Controller();
 	ctrlPlayer->target = player;
 	ctrlPlayer->pad = pad;
 
 	ctrlPlayer->camera = player_camera;
 	current_camera = ctrlPlayer->getCamera();
-
+	*/
+/*
 	EntityMesh* bed = new EntityMesh();
 	bed->setup("data/bed.obj", "data/bed.tga");
 	bed->local_matrix.setTranslation(0, -10, 600 - (bed->mesh->center.y + 50));
@@ -114,9 +120,9 @@ void Game::init(void)
 	test2->local_matrix.setTranslation(605, -10, -600 - (test2->mesh->center.x * 4));
 	test2->local_matrix.rotateLocal(90 * DEG2RAD, Vector3(0, 1, 0));
 	test2->onDemand();
-	world->root->addChildren(test2);
+	world->root->addChildren(test2);*/
 
-
+/*
 	test3 = new Fighter();
 	test3->setup("data/test/CFA44.obj", "data/test/CFA44.tga");
 	test3->two_sided = true;
@@ -125,6 +131,26 @@ void Game::init(void)
 	test3->camera_eye = Vector3(0, 8, -20);
 	test3->local_matrix.setTranslation(0,100,-250);
 	world->root->addChildren(test3);
+	*/
+
+/*	for (int f = 0; f < 5; f++) {
+		Fighter* enemy = new Fighter();
+		enemy->setup("data/meshes/zoks/X-29A/X-29A.OBJ", "data/meshes/zoks/X-29A/X-29A.tga");
+		enemy->setTimetoShoot(0.7);
+		enemy->onDemand();
+
+		Vector3 pos;
+		pos.random(400);
+		enemy->local_matrix.setTranslation(pos.x, pos.y, pos.z);
+
+		ControllerIA* ctrlEnemy = new ControllerIA();
+		ctrlEnemy->dynamic_controller = true;
+		ctrlEnemy->target = enemy;
+
+
+		world->root->addChildren(enemy);
+		controllers.push_back(ctrlEnemy);
+	}
 
 
 	AntiAircraft* torreta = new AntiAircraft();
@@ -137,7 +163,9 @@ void Game::init(void)
 
 	ControllerIA* ctrlTorreta = new ControllerIA();
 	ctrlTorreta->target = torreta;
+*/
 
+/*
 	ControllerIA* ctrlBoss = new ControllerIA();
 	world->boss->setTimetoShoot(1.0);
 	ctrlBoss->target = world->boss;
@@ -145,7 +173,13 @@ void Game::init(void)
 //	controllers.push_back(ctrlTorreta);
 	ctrlBoss->dynamic_controller = true;
 	controllers.push_back(ctrlBoss);
-	
+*/	
+
+
+
+	//Probando los Stages
+	current_stage->init();
+
 	/*	Codigo para composición de meshes, por ejemplo avion con misil.
 		if (prev_entity) {
 		prev_entity->addChildren(entity);
@@ -171,14 +205,14 @@ void Game::render(void)
 {
 
 	//set the clear color (the background color)
-	glClearColor(0.0, 0.0, 0.0, 1.0);
+/*	glClearColor(0.0, 0.0, 0.0, 1.0);
 
 	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//Put the camera matrices on the stack of OpenGL (only for fixed rendering)
 	current_camera->set();
-
+*/
 	//Desactivar el depth buffer de openGL para pintar el skybox
 	/*glDisable(GL_DEPTH_TEST);
 	world->skybox->local_matrix.setTranslation(current_camera->eye.x, current_camera->eye.y, current_camera->eye.z);
@@ -202,12 +236,17 @@ void Game::render(void)
 	*/
 
 	//Draw out world
-	world->root->render(current_camera);
+	/*world->root->render(current_camera);
 	world->skybox->render(current_camera);
 
 	bulletMng->render(current_camera);
 
 	renderDebug(current_camera);
+	
+	renderGUI();*/
+
+				//STAGES
+	current_stage->render();
 
     glDisable( GL_BLEND );
 
@@ -218,18 +257,47 @@ void Game::render(void)
 	drawText(2, 2, std::string("FPS: ") + std::to_string(int(this->fps)), this->fps > 30 ? Vector3(1, 1, 1) : Vector3(1, 0, 0), 2);
 	drawText(2, 20, std::string("DIPs: ") + std::to_string(Mesh::s_num_meshes_rendered), this->fps > 30 ? Vector3(1, 1, 1) : Vector3(1, 0, 0), 2);
 	last = getTime();*/
+
 	
-	
-	std::string posCamera = std::string("Camera pos: ") + std::to_string(int(current_camera->eye.x)) + std::string(" ") + std::to_string(int(current_camera->eye.y)) + std::string(" ") + std::to_string(int(current_camera->eye.z));
+	//Pintamos esto para saber la posición del avion
+	/*std::string posCamera = std::string("Camera pos: ") + std::to_string(int(current_camera->eye.x)) + std::string(" ") + std::to_string(int(current_camera->eye.y)) + std::string(" ") + std::to_string(int(current_camera->eye.z));
 	drawText(2, 2, posCamera, Vector3(1, 1, 1), 2);
+	*/
 
 	//swap between front buffer and back buffer
 	SDL_GL_SwapWindow(this->window);
 }
 
+void Game::renderGUI()
+{
+	//Pintar la scene en 2D
+	//Cull FACE da igual en principio 
+
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
+
+	Camera cam2D;
+	//0,0 arriba a la izquierda
+	cam2D.setOrthographic(0, window_width, window_height, 0, -1, 1);
+	cam2D.set();
+
+	Mesh quad;
+	quad.createQuad(window_width*0.5, window_height*0.5, 50, 50);
+
+	Texture* crosshair = Texture::get("data/textures/HUD/crosshair2.tga");
+
+	//ACtivar la transparencia
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	crosshair->bind();
+	quad.render(GL_TRIANGLES);
+	crosshair->unbind();
+	glDisable(GL_BLEND);
+}
+
 void Game::update(double seconds_elapsed)
 {
-	world->root->update(seconds_elapsed * time_scale);
+	/*world->root->update(seconds_elapsed * time_scale);
 	ctrlPlayer->update(seconds_elapsed * time_scale);
 	collisionMng->update(seconds_elapsed * time_scale);
 
@@ -241,13 +309,20 @@ void Game::update(double seconds_elapsed)
 		controllers[i]->update(seconds_elapsed);
 	}
 	//FIN PRUEBAS IA
+*/
+
+			//STAGES
+	if (current_stage->update(seconds_elapsed* time_scale))
+	{
+		std::cout << "Cambio de stage" << std::endl;
+		player;
+		current_stage->toPlay();
+		current_stage->init();
+	}
+
 
 
 	double speed = seconds_elapsed * 100; //the speed is defined by the seconds_elapsed so it goes constant
-
-	
-
-
 
 	if (current_camera == free_camera) {
 
@@ -306,6 +381,7 @@ void Game::renderDebug(Camera* camera)
 	glEnable(GL_DEPTH_TEST);
 
 }
+
 //Keyboard event handler (sync input)
 void Game::onKeyPressed( SDL_KeyboardEvent event )
 {
@@ -326,11 +402,9 @@ void Game::onKeyPressed( SDL_KeyboardEvent event )
 			}
 			break;
 		case SDLK_1:
-			std::cout << "target test 3" << std::endl;
 			ctrlPlayer->target = test3;
 			break;
 		case SDLK_2:
-			std::cout << "target player" << std::endl;
 			ctrlPlayer->target = player;
 			break;
 	}

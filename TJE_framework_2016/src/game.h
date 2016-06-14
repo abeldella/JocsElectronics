@@ -59,6 +59,7 @@ public:
 	CollisionManager* collisionMng;
 
 	void renderDebug(Camera* camera);
+	void renderGUI();
 	Fighter* test3;
 
 	std::vector< Controller* > controllers;

@@ -25,7 +25,11 @@ public:
 class ControllerIA : public Controller
 {
 public:
+	std::vector<Vector3> s_checkpoints;
+
+	int checkpoint;
 	bool dynamic_controller;
+	bool attack;
 	ControllerIA();
 	~ControllerIA();
 

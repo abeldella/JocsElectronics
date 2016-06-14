@@ -19,10 +19,10 @@ CollisionManager::CollisionManager()
 
 void CollisionManager::update(float dt)
 {
-	if (bulletToStatic()) std::cout << "BulletToStatic Colisiona!!!" << std::endl;
+	if (bulletToStatic()) //std::cout << "BulletToStatic Colisiona!!!" << std::endl;
 	if (bulletToDynamic()) std::cout << "BulletToDynamic Colisiona!!!" << std::endl;
 
-	if (dynamicToStatic()) std::cout << "DynamicToStatic Colisiona!!!" << std::endl;
+	if (dynamicToStatic())// std::cout << "DynamicToStatic Colisiona!!!" << std::endl;
 	if (dynamicTodynamic()) std::cout << "DynamicToDynamic Colisiona!!!" << std::endl;
 }
 

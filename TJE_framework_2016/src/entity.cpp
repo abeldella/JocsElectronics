@@ -304,7 +304,7 @@ Vector3 Fighter::getCameraEye()
 void Fighter::updateCamera(Camera* camera)
 {
 	Matrix44 rot;
-	rot.rotateLocal(camera_info.x * 2.0, Vector3(0, 1, 0));
+	rot.rotateLocal(camera_info.x * 2.0 + camera_info.y, Vector3(0, 1, 0));
 	Matrix44 global = getGlobalMatrix();
 	Vector3 eye = global * (rot * camera_eye);
 	Vector3 center = global * (rot * camera_center);

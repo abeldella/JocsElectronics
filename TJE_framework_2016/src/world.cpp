@@ -8,7 +8,7 @@
 #include "texture.h"
 
 #define FIGHTER 1
-#define FIGHTERWITHPOS 2
+#define ENTITY 2
 #define TERRAIN 3
 #define SKYBOX 4
 #define BOSS 5
@@ -47,23 +47,29 @@ Entity* World::factory(const char* filename)
 
 		//std::transform(type.begin(), type.end(), type.begin(), ::tolower);
 
-		switch(id)
+		switch (id)
 		{
 		case FIGHTER:
-			{
-				for (int i = 0; i < num_entities; i++) {
-					//createFighter();
-				}
+		{
+			docTexture = t.getword();
+			for (int i = 0; i < num_entities; i++) {
+				Vector3 pos = Vector3(t.getfloat(), t.getfloat(), t.getfloat());
+				createFighter(type.c_str(), docTexture.c_str(), pos);
 			}
+		}
 			break;
 
-		case FIGHTERWITHPOS:
-			{
-				for (int i = 0; i < num_entities; i++) {
-					Vector3 pos = Vector3(t.getfloat(), t.getfloat(), t.getfloat());
-					docCreateEntity(pos);
-				}
+		case ENTITY:
+		{
+			docTexture = t.getword();
+			for (int i = 0; i < num_entities; i++) {
+				Vector3 pos = Vector3(t.getfloat(), t.getfloat(), t.getfloat());
+				int angle = t.getint();
+				Vector3 rotation = Vector3(t.getfloat(), t.getfloat(), t.getfloat());
+
+				docCreateEntity(type.c_str(), docTexture.c_str(), pos, angle, rotation);
 			}
+		}
 			break;
 
 		case TERRAIN:
@@ -73,18 +79,18 @@ Entity* World::factory(const char* filename)
 			createSkybox();
 			break;
 		case BOSS:
-			docTexture = t.getword();
-			createBoss(type.c_str() , docTexture.c_str());
+		{
+		docTexture = t.getword();
+		Vector3 pos = Vector3(t.getfloat(), t.getfloat(), t.getfloat());
+		createBoss(type.c_str(), docTexture.c_str(), pos);
+		}
 			break;
 		
 		default: std::cout << "Incorrect Id: " << id << std::endl;
 			break;
 		
 		}
-		/*Debe leer nombre de la entidad, mesh, lod_mesh, texture y shader
-		hacemos entity->mesh = Mesh::get(" nombre buscado en archivo");
-		return entitu
-		*/											
+										
 	}
 	return NULL;
 }
@@ -92,55 +98,50 @@ Entity* World::factory(const char* filename)
 void World::createSkybox()
 {
 	skybox = new EntityCollider();
-	skybox->setup("data/meshes/skybox/cubemap2.OBJ", "data/room.tga");
-	//skybox->setup("data/meshes/skybox/cubemap.ASE", "data/textures/cielo.TGA");
-	//skybox->local_matrix.setTranslation(0, skybox->mesh->halfSize.y, 0);
-	//skybox->local_matrix.setScale(40, 50, 40);
-	//skybox->local_matrix.setScale(12, 15, 12);
+	skybox->setup("data/meshes/skybox/cubemap2.OBJ", "data/textures/room.tga");
 	skybox->frustum_test = false;
 	skybox->onDemand();
 	skybox->local_matrix.setTranslation(0, 400, 0);
-	/*for (int i = -4; i < 5; i++) {
-		for (int j = -4; j < 5; j++) {
-			Mesh* plane = new Mesh();
-			plane->createPlane(1000);
-			EntityMesh* floor = new EntityMesh();
-			floor->mesh = plane;
-			floor->texture = Texture::get("data/textura_luna.tga");
-			floor->two_sided = true;
-			floor->local_matrix.setTranslation(i*floor->mesh->halfSize.x * 2, 7000, j*floor->mesh->halfSize.z * 2);
-			root->addChildren(floor);
-		}
-	}
-	Mesh* plane = new Mesh();
-	plane->createPlane(100000);
-	EntityMesh* floor = new EntityMesh();
-	floor->mesh = plane;
-	floor->texture = Texture::get("data/textura_luna.tga");
-	floor->two_sided = true;
-	floor->local_matrix.setTranslation(floor->mesh->halfSize.x * 2, 7000, floor->mesh->halfSize.z * 2);
-	root->addChildren(floor);*/
-}
-
-void World::createFighter()
-{
-	for (int i = 0; i < 100; i++) {
-
-		EntityMesh* entity = new EntityMesh();
-		entity->setup("data/meshes/spitfire/spitfire.ASE", "data/textures/spitfire_color_spec.TGA", "data/meshes/spitfire/spitfire_low.ASE");
-		Vector3 pos;
-		pos.random(600);
-		entity->local_matrix.setTranslation(pos.x, pos.y, pos.z);
-		root->addChildren(entity);
-	}
 
 }
 
-void World::docCreateEntity(Vector3 pos)
+void World::createFighter(const char* name, const char* texture, Vector3 pos)
 {
-	EntityMesh* entity = new EntityMesh();
-	entity->setup("data/meshes/spitfire/spitfire.ASE", "data/textures/spitfire_color_spec.TGA", "data/meshes/spitfire/spitfire_low.ASE");
+	std::string n_filename, t_filename;
+	n_filename = std::string("data/meshes/") + name;
+	t_filename = std::string("data/textures/") + texture;
+
+
+	Fighter* fighter = new Fighter();
+	fighter->setup(n_filename.c_str(), t_filename.c_str());
+	fighter->local_matrix.setTranslation(pos.x, pos.y, pos.z);
+
+	fighter->dynamic_entity = true;
+	fighter->setTimetoShoot(0.7);
+	fighter->onDemand();
+
+	ControllerIA* ctrlFighter = new ControllerIA();
+	ctrlFighter->dynamic_controller = true;
+	ctrlFighter->target = fighter;
+
+	root->addChildren(fighter);
+	controllers.push_back(ctrlFighter);
+}
+
+void World::docCreateEntity(const char* name, const char* texture, Vector3 pos, int angle, Vector3 rotation)
+{
+	std::string n_filename, t_filename;
+	n_filename = std::string("data/meshes/") + name;
+	t_filename = std::string("data/textures/") + texture;
+
+
+	EntityCollider* entity = new EntityCollider();
+	entity->setup(n_filename.c_str(), t_filename.c_str());
 	entity->local_matrix.setTranslation(pos.x, pos.y, pos.z);
+
+	entity->local_matrix.rotateLocal(angle * DEG2RAD, rotation);
+
+	entity->onDemand();
 	root->addChildren(entity);
 
 }
@@ -156,17 +157,6 @@ Entity* World::createEntity(Vector3 pos)
 
 void World::createTerrain()
 {
-	/*for (int i = -3; i <= 3; i++) {
-		for (int j = -3; j <= 3; j++) {
-			EntityMesh* island = new EntityMesh();
-			
-			
-			island->setup("data/meshes/island.ASE", "data/textures/island_color_luz.TGA");
-			island->local_matrix.setTranslation( i*island->mesh->halfSize.x * 2, 0, j*island->mesh->halfSize.z);
-			//island->shader = fog_shader;
-			root->addChildren(island);
-		}
-	}*/
 
 //Creamos el suelo de la habitación
 	for (int i = 0; i < 1; i++) {
@@ -177,41 +167,36 @@ void World::createTerrain()
 			EntityMesh* floor = new EntityMesh();
 			floor->mesh = plane;
 			//floor->texture = Texture::get("data/TilesPlain0136_1_S.TGA");
-			floor->texture = Texture::get("data/woodeuro.TGA");
+			floor->texture = Texture::get("data/textures/woodeuro.TGA");
 			floor->two_sided = true;
 			floor->local_matrix.setTranslation(i*floor->mesh->halfSize.x * 2, -10, j*floor->mesh->halfSize.z * 2);
 			root->addChildren(floor);
 		}
-	}/*
-	Mesh* plane = new Mesh();
-	plane->createPlane(100000);
-	EntityMesh* floor = new EntityMesh();
-	floor->mesh = plane;
-	floor->texture = Texture::get("data/TilesPlain0136_1_S.TGA");
-	floor->two_sided = true;
-	floor->local_matrix.setTranslation(0,-10,0);
-	root->addChildren(floor);
-	*/
+	}
 
 }
 
-void World::createBoss(const char* name, const char* texture)
+void World::createBoss(const char* name, const char* texture, Vector3 pos)
 {
 	std::string n_filename, t_filename;
-	n_filename = std::string("data/meshes/boss/") + name;
+	n_filename = std::string("data/meshes/") + name;
 	t_filename = std::string("data/textures/") + texture;
 
-	Vector3 pos;
-	pos.random(1000);
 
 	Fighter* boss = new Fighter();
 	boss->setup(n_filename.c_str(), t_filename.c_str());
-	boss->local_matrix.setTranslation(0,100, 200);
+	boss->local_matrix.setTranslation(pos.x, pos.y, pos.z);
 	
 	boss->dynamic_entity = true;
+	boss->setTimetoShoot(1.0);
 	boss->onDemand();
 
-	root->addChildren(boss);
+	ControllerIA* ctrlBoss = new ControllerIA();
+	ctrlBoss->dynamic_controller = true;
+	ctrlBoss->target = boss;
+
 	this->boss = boss;
+	root->addChildren(boss);
+	controllers.push_back(ctrlBoss);
 	
 }
