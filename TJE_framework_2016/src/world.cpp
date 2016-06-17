@@ -98,10 +98,10 @@ Entity* World::factory(const char* filename)
 void World::createSkybox()
 {
 	skybox = new EntityCollider();
-	skybox->setup("data/meshes/skybox/cubemap2.OBJ", "data/textures/room.tga");
+	skybox->setup("data/meshes/skybox/cubemap.OBJ", "data/textures/room2.tga");
 	skybox->frustum_test = false;
 	skybox->onDemand();
-	skybox->local_matrix.setTranslation(0, 400, 0);
+	skybox->local_matrix.setTranslation(0, 200, 0);
 
 }
 
@@ -116,6 +116,7 @@ void World::createFighter(const char* name, const char* texture, Vector3 pos)
 	fighter->setup(n_filename.c_str(), t_filename.c_str());
 	fighter->local_matrix.setTranslation(pos.x, pos.y, pos.z);
 
+	fighter->name = "fighter";
 	fighter->dynamic_entity = true;
 	fighter->setTimetoShoot(0.7);
 	fighter->onDemand();
@@ -146,7 +147,7 @@ void World::docCreateEntity(const char* name, const char* texture, Vector3 pos, 
 
 }
 
-Entity* World::createEntity(Vector3 pos)
+Entity* World::createSpitfire(Vector3 pos)
 {
 	EntityMesh* entity = new Fighter();
 	entity->setup("data/meshes/spitfire/spitfire.ASE", "data/textures/spitfire_color_spec.TGA", "data/meshes/spitfire/spitfire_low.ASE");

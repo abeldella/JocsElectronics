@@ -68,7 +68,7 @@ void Game::init(void)
 	free_camera->setPerspective(70,window_width/(float)window_height,0.1,25000); //set the projection, we want to be perspective
 	current_camera = free_camera;
 
-//	world->factory("data/worlds/world_test.txt");
+	world->factory("data/worlds/world_test.txt");
 
 	//Cargamos Meshes
 	/*Shader* fog_shader = Shader::load("data/shaders/fog.vs", "data/.-------");
@@ -95,64 +95,6 @@ void Game::init(void)
 	current_camera = ctrlPlayer->getCamera();
 	*/
 /*
-	EntityMesh* bed = new EntityMesh();
-	bed->setup("data/bed.obj", "data/bed.tga");
-	bed->local_matrix.setTranslation(0, -10, 600 - (bed->mesh->center.y + 50));
-	world->root->addChildren(bed);
-
-	for (int i = 0; i < 5; i++) {
-		EntityCollider* test = new EntityCollider();
-		test->setup("data/test/dartboard.obj", "data/test/dartboard.tga");
-		test->two_sided = true;
-		
-		Vector3 pos;
-		pos.random(600);
-
-		test->local_matrix.setTranslation(pos.x, pos.y, pos.z);
-		test->dynamic_entity = true;
-		test->onDemand();
-		world->root->addChildren(test);
-	}
-
-	EntityCollider* test2 = new EntityCollider();
-	test2->setup("data/test/ok1/door.obj", "data/test/ok1/door.tga");
-	test2->two_sided = true;
-	test2->local_matrix.setTranslation(605, -10, -600 - (test2->mesh->center.x * 4));
-	test2->local_matrix.rotateLocal(90 * DEG2RAD, Vector3(0, 1, 0));
-	test2->onDemand();
-	world->root->addChildren(test2);*/
-
-/*
-	test3 = new Fighter();
-	test3->setup("data/test/CFA44.obj", "data/test/CFA44.tga");
-	test3->two_sided = true;
-	test3->onDemand();
-	test3->camera_center = Vector3(0, 9, 30);
-	test3->camera_eye = Vector3(0, 8, -20);
-	test3->local_matrix.setTranslation(0,100,-250);
-	world->root->addChildren(test3);
-	*/
-
-/*	for (int f = 0; f < 5; f++) {
-		Fighter* enemy = new Fighter();
-		enemy->setup("data/meshes/zoks/X-29A/X-29A.OBJ", "data/meshes/zoks/X-29A/X-29A.tga");
-		enemy->setTimetoShoot(0.7);
-		enemy->onDemand();
-
-		Vector3 pos;
-		pos.random(400);
-		enemy->local_matrix.setTranslation(pos.x, pos.y, pos.z);
-
-		ControllerIA* ctrlEnemy = new ControllerIA();
-		ctrlEnemy->dynamic_controller = true;
-		ctrlEnemy->target = enemy;
-
-
-		world->root->addChildren(enemy);
-		controllers.push_back(ctrlEnemy);
-	}
-
-
 	AntiAircraft* torreta = new AntiAircraft();
 	torreta->setup("data/meshes/torreta/sci_fi_turret.obj", "data/meshes/torreta/sci_fi_turret.tga");
 	torreta->dynamic_entity = false; //La pongo como no dinamica para testear pero debe ser dinamica para poder destruirla
@@ -248,8 +190,6 @@ void Game::render(void)
 				//STAGES
 	current_stage->render();
 
-    glDisable( GL_BLEND );
-
 	/*float time_per_frame = (getTime() - last);
 	float fps = 1000.0 / time_per_frame;
 	if (frame % 4 == 0)
@@ -310,16 +250,35 @@ void Game::update(double seconds_elapsed)
 	}
 	//FIN PRUEBAS IA
 */
-
+	std::cout << "time " << seconds_elapsed <<  std::endl;
 			//STAGES
-	if (current_stage->update(seconds_elapsed* time_scale))
+	if (current_stage->update(seconds_elapsed* time_scale) && current_stage->type_stage == "Intro")
 	{
 		std::cout << "Cambio de stage" << std::endl;
-		player;
+		current_stage->toMenu();
+		current_stage->init();
+	}
+
+	if (current_stage->update(seconds_elapsed* time_scale) && current_stage->type_stage == "Menu")
+	{
+		std::cout << "Cambio de stage" << std::endl;
+		current_stage->toLoading();
+		current_stage->init();
+	}
+
+	if (current_stage->update(seconds_elapsed* time_scale) && current_stage->type_stage == "Loading")
+	{
+		std::cout << "Cambio de stage" << std::endl;
 		current_stage->toPlay();
 		current_stage->init();
 	}
 
+	if (current_stage->update(seconds_elapsed* time_scale) && current_stage->type_stage == "Play")
+	{
+		std::cout << "Cambio de stage" << std::endl;
+		current_stage->toMenu();
+		current_stage->init();
+	}
 
 
 	double speed = seconds_elapsed * 100; //the speed is defined by the seconds_elapsed so it goes constant
@@ -355,10 +314,6 @@ void Game::update(double seconds_elapsed)
         this->mouse_position.x = center_x;
         this->mouse_position.y = center_y;
 	}
-
-	/*
-		ELIMINAR DE ENTITY TODAS LAS ENTIDADES DEL VECTOR to_destroy
-	*/
 }
 
 void Game::renderDebug(Camera* camera)

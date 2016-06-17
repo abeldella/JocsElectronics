@@ -35,7 +35,7 @@ public:
 
 	void createSkybox();
 	
-	Entity* createEntity(Vector3 pos);
+	Entity* createSpitfire(Vector3 pos);
 
 	void createTerrain();
 

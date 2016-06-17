@@ -87,6 +87,10 @@ void Controller::update(float dt)
 		if (pad_state.button[X_BUTTON]) {
 			setTarget(game->player);
 		}
+		if (pad_state.button[B_BUTTON]) {
+			if (game->time_scale == 1.0) game->time_scale = 0.01;
+			else game->time_scale = 1.0;
+		}
 
 
 		/*CONTROL DE TRIGGERS
@@ -128,13 +132,13 @@ ControllerIA::ControllerIA()
 	attack = false;
 
 	checkpoint = 0;
-	s_checkpoints.push_back(Vector3(-185, 485, 385));
-	s_checkpoints.push_back(Vector3(-324, 376, -167));
+	s_checkpoints.push_back(Vector3(-185, 350, 385));
+	s_checkpoints.push_back(Vector3(-324, 276, -167));
 	s_checkpoints.push_back(Vector3(-415, 13, -433));
-	s_checkpoints.push_back(Vector3(-20, 248, -485));
-	s_checkpoints.push_back(Vector3(365, 450, -420));
-	s_checkpoints.push_back(Vector3(403, 487, 111));
-	s_checkpoints.push_back(Vector3(195, 400, 432));
+	s_checkpoints.push_back(Vector3(-20, 148, -485));
+	s_checkpoints.push_back(Vector3(365, 250, -420));
+	s_checkpoints.push_back(Vector3(403, 300, 111));
+	s_checkpoints.push_back(Vector3(195, 340, 432));
 
 }
 
