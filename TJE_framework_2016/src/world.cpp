@@ -19,7 +19,9 @@ World::World()
 {
 	root = NULL;
 	skybox = NULL;
-	boss = NULL;	
+	boss = NULL;
+
+	current_fighter = 0;
 }
 
 
@@ -44,8 +46,6 @@ Entity* World::factory(const char* filename)
 		int num_entities = t.getint();
 		int id = t.getint();
 		std::string type = t.getword();
-
-		//std::transform(type.begin(), type.end(), type.begin(), ::tolower);
 
 		switch (id)
 		{
@@ -92,6 +92,16 @@ Entity* World::factory(const char* filename)
 		}
 										
 	}
+
+
+	t.seek("*MENU_PLANESELECTION");
+	int total_planes = t.getint();
+
+	for (int i = 0; i < total_planes; i++) {
+		std::string type = t.getword();
+		menuPlaneSelection(type.c_str());
+	}
+
 	return NULL;
 }
 
@@ -200,4 +210,17 @@ void World::createBoss(const char* name, const char* texture, Vector3 pos)
 	root->addChildren(boss);
 	controllers.push_back(ctrlBoss);
 	
+}
+
+void World::menuPlaneSelection(const char* name)
+{
+	std::string n_filename, t_filename;
+	n_filename = std::string("data/meshes/fighter/") + name + std::string("/") + name + std::string(".obj");
+	t_filename = std::string("data/textures/fighters/") + name + std::string(".tga");
+
+	Fighter* fighter = new Fighter();
+	fighter->setup(n_filename.c_str(), t_filename.c_str());
+	fighter->name = name;
+
+	entities.push_back(fighter);
 }

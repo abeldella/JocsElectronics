@@ -19,6 +19,7 @@ public:
 		return instance;
 	}
 
+	int current_fighter;
 	Entity* root;
 	EntityCollider* skybox;
 	std::vector< Entity* > entities;
@@ -42,6 +43,7 @@ public:
 	void createFighter(const char* name, const char* texture, Vector3 pos);
 	void createBoss(const char* name, const char* texture, Vector3 pos);
 	void docCreateEntity(const char* name, const char* texture, Vector3 pos, int angle, Vector3 rotation);
+	void menuPlaneSelection(const char* name);
 
 };
 

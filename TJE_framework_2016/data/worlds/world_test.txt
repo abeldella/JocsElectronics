@@ -1,6 +1,7 @@
 
 
 *SCENE_NUMOBJECTS 5
+	*NUMOBJECT	3	1	fighter/x-wing/x-wing.obj fighters/x-wing.tga 	330.0 277.0 -5.0 	350.0 277.0 5.0 	350.0 277.0 -15.0
 	*NUMOBJECT	5	1	fighter/X-29A/X-29A.obj fighters/X-29A.tga 	113.0 110.0 40.0 	400.0 50.0 -270.0 	75.0 60.0 -370.0	-40.0 80.0 -365.0 	220.0 70.0 500.0
 	*NUMOBJECT	1	4	skybox
 	*NUMOBJECT	1	3	terrain
@@ -20,4 +21,10 @@
 	*NUMOBJECT	1	2	furniture/persianCarpet.obj furniture/carpetKids.tga	-350.0 -8.0 290.0	0 	0.0 1.0 0.0
 	*NUMOBJECT	1	2	furniture/pokeball.obj furniture/pokeball.tga	-302.0 -10.0 -578.0	0 	0.0 1.0 0.0
 
-	*NUMOBJECT	3	1	fighter/x-wing/x-wing.obj fighters/x-wing.tga 	330.0 277.0 -5.0 	350.0 277.0 5.0 	350.0 277.0 -15.0
+	19
+
+*MENU_PLANESELECTION 4
+B-2_Spirit
+CFA44
+F-15_SMTD
+Su-37_Terminator

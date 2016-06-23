@@ -210,9 +210,6 @@ void Game::render(void)
 
 void Game::renderGUI()
 {
-	//Pintar la scene en 2D
-	//Cull FACE da igual en principio 
-
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 
@@ -237,46 +234,16 @@ void Game::renderGUI()
 
 void Game::update(double seconds_elapsed)
 {
-	/*world->root->update(seconds_elapsed * time_scale);
-	ctrlPlayer->update(seconds_elapsed * time_scale);
-	collisionMng->update(seconds_elapsed * time_scale);
 
-	bulletMng->update(seconds_elapsed * time_scale);
-
-	//controller IA Torreta
-	for (int i = 0; i < controllers.size(); i++) {
-		if (controllers[i]->target->destroy_entity)continue;
-		controllers[i]->update(seconds_elapsed);
-	}
-	//FIN PRUEBAS IA
-*/
-	std::cout << "time " << seconds_elapsed <<  std::endl;
 			//STAGES
-	if (current_stage->update(seconds_elapsed* time_scale) && current_stage->type_stage == "Intro")
+	if (current_stage->update(seconds_elapsed* time_scale) )
 	{
 		std::cout << "Cambio de stage" << std::endl;
-		current_stage->toMenu();
-		current_stage->init();
-	}
+		if (current_stage->type_stage == "Intro") current_stage->toMenu();
+		else if (current_stage->type_stage == "Menu") current_stage->toLoading();
+		else if (current_stage->type_stage == "Loading") current_stage->toPlay();
+		else if (current_stage->type_stage == "Play") current_stage->toMenu();
 
-	if (current_stage->update(seconds_elapsed* time_scale) && current_stage->type_stage == "Menu")
-	{
-		std::cout << "Cambio de stage" << std::endl;
-		current_stage->toLoading();
-		current_stage->init();
-	}
-
-	if (current_stage->update(seconds_elapsed* time_scale) && current_stage->type_stage == "Loading")
-	{
-		std::cout << "Cambio de stage" << std::endl;
-		current_stage->toPlay();
-		current_stage->init();
-	}
-
-	if (current_stage->update(seconds_elapsed* time_scale) && current_stage->type_stage == "Play")
-	{
-		std::cout << "Cambio de stage" << std::endl;
-		current_stage->toMenu();
 		current_stage->init();
 	}
 

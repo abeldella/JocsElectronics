@@ -21,7 +21,7 @@ public:
 	SDL_Window* window;
 	int window_width;
 	int window_height;
-    
+
     float time;
 	float time_scale; //game mov speed
 

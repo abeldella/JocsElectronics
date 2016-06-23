@@ -27,10 +27,16 @@ public:
 
 class StageMenu : public Stage {
 public:
+	int selected_plane;
+	bool to_select_plane;
+	bool lock;
+	Camera* camera;
+	Entity* plane_to_select;
 
 	void init();
 	void render();
 	bool update(double dt);
+	void changePlane(int next);
 	~StageMenu() { cout << "menu: llamada al destructor." << endl; }
 };
 
@@ -55,7 +61,7 @@ public:
 class StageDelegator : public Stage {
 public:
 	// constructor/destructor
-	StageDelegator() : stage(new StagePlay()) { }
+	StageDelegator() : stage(new StageIntro()) { }
 	virtual ~StageDelegator() { delete stage; }
 
 private:

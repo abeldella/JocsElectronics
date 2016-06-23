@@ -38,7 +38,7 @@ void drawGrid(float dist)
 			float b = i * dist;
 
 			if (i == num_lines * 0.5)
-				glColor3f(1,0.25,0.25);
+				glColor3f(0.87, 0.68, 0.22);
 			else if (i%2)
 				glColor3f(0.25,0.25,0.25);
 			else
