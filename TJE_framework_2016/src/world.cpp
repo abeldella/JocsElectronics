@@ -129,6 +129,7 @@ void World::createFighter(const char* name, const char* texture, Vector3 pos)
 	fighter->name = "fighter";
 	fighter->dynamic_entity = true;
 	fighter->setTimetoShoot(0.7);
+	fighter->setSpeed(100.0);
 	fighter->onDemand();
 
 	ControllerIA* ctrlFighter = new ControllerIA();
@@ -200,6 +201,7 @@ void World::createBoss(const char* name, const char* texture, Vector3 pos)
 	
 	boss->dynamic_entity = true;
 	boss->setTimetoShoot(1.0);
+	boss->setSpeed(130.0);
 	boss->onDemand();
 
 	ControllerIA* ctrlBoss = new ControllerIA();

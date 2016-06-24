@@ -227,7 +227,8 @@ void EntityCollider::onCollision()
 //---------------------------------------------------------------------------------------------------------
 Fighter::Fighter()
 {
-	speed = 100;	
+	speed = 0;	
+	speedc = 0;
 	tta = 5;
 	tts = MAX_TTS;
 	ttsc = MAX_TTS;
@@ -247,7 +248,7 @@ void Fighter::update(float dt)
 	if (accelerator) {
 		tta -= dt;
 		if (tta <= 0) {
-			speed = 100;
+			speed = speedc;
 			camera_info.z = 0;
 			accelerator = false;
 		}
@@ -319,8 +320,8 @@ void Fighter::updateCamera(Camera* camera)
 
 void Fighter::accelerate()
 {
-	speed = 150;
-	tta = 10;
+	speed = speedc + speedc*0.5;
+	tta = 5;
 	accelerator = true;
 }
 
@@ -329,6 +330,11 @@ void Fighter::setTimetoShoot(float time)
 	ttsc = time;
 }
 
+void Fighter::setSpeed(float velocity)
+{
+	speed = velocity;
+	speedc = velocity;
+}
 //---------------------------------------------------------------------------------------------------------
 AntiAircraft::AntiAircraft()
 {

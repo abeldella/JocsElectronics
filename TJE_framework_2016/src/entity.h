@@ -85,6 +85,7 @@ class Fighter : public EntityCollider
 {
 public:
 	float speed;
+	float speedc;
 	Vector3 velocity;
 	Vector3 camera_info;
 
@@ -105,6 +106,7 @@ public:
 	void updateCamera(Camera* camera);
 
 	void setTimetoShoot(float time);
+	void setSpeed(float velocity);
 
 	Vector3 getCameraEye();
 };

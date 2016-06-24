@@ -195,7 +195,7 @@ bool StageLoading::update(double dt)
 
 	if (game->pad) {
 		pad_state = getJoystickState(game->pad);
-		if (pad_state.button[A_BUTTON] || pad_state.button[START_BUTTON]) return true;
+		if (pad_state.button[B_BUTTON] || pad_state.button[START_BUTTON]) return true;
 	}
 
 	return false;
@@ -250,17 +250,16 @@ void StagePlay::init()
 
 
 	game->test3 = new Fighter(); 
-
 	std::string name, texture;
 	name = std::string("data/meshes/fighter/") + world->entities[world->current_fighter]->name + std::string("/") + world->entities[world->current_fighter]->name + std::string(".obj");
 	texture = std::string("data/textures/fighters/") + world->entities[world->current_fighter]->name + std::string(".tga");
 
-	//game->test3->setup(name.c_str(), texture.c_str());
-	//game->test3->setup("data/meshes/fighter/CFA44/CFA44.obj", "data/meshes/fighter/CFA44/CFA44.tga");
 	game->test3 = (Fighter*)world->entities[world->current_fighter];
 	game->test3->onDemand();
 	game->test3->camera_center = Vector3(0, 9, 30);
 	game->test3->camera_eye = Vector3(0, 8, -20);
+	game->test3->setSpeed(100.0);
+	game->test3->start = 10;
 	game->test3->local_matrix.setTranslation(0, 100, -250);
 	world->root->addChildren(game->test3);
 }
@@ -307,10 +306,10 @@ bool StagePlay::update(double dt)
 		world->controllers[i]->update(dt);
 	}
 
-	for (int i = 0; i < game->controllers.size(); i++) {
+/*	for (int i = 0; i < game->controllers.size(); i++) {
 		if (game->controllers[i]->target->destroy_entity)continue;
 		game->controllers[i]->update(dt);
-	}
+	}*/
 
 
 	keystate = game->keystate;
