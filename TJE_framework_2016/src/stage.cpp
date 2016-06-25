@@ -29,10 +29,10 @@ void StageIntro::render()
 
 }
 
-bool StageIntro::update(double dt) 
+void StageIntro::update(double dt) 
 {
 	game = Game::instance;
-	keystate = game->keystate;
+	/*keystate = game->keystate;
 	if (keystate[SDL_SCANCODE_SPACE]) return true;
 
 	if (game->pad) {
@@ -40,7 +40,19 @@ bool StageIntro::update(double dt)
 		if (pad_state.button[A_BUTTON] || pad_state.button[START_BUTTON]) return true;
 	}
 	
-	return false; 
+	return false; */
+}
+
+void StageIntro::onKeyPressed(SDL_KeyboardEvent event) {
+
+}
+
+void StageIntro::onMouseButton(SDL_MouseButtonEvent event) {
+
+}
+
+void StageIntro::onJoyButtonUp(SDL_JoyButtonEvent event) {
+
 }
 
 //---------------------------------------------------------------------------------------------------------
@@ -119,33 +131,70 @@ void StageMenu::render()
 	}
 }
 
-bool StageMenu::update(double dt) 
+void StageMenu::update(double dt)
 {
 	game = Game::instance;
-	keystate = game->keystate;
-	if (game->pad) pad_state = getJoystickState(game->pad);
-
-	if (!to_select_plane) {
-		if (keystate[SDL_SCANCODE_SPACE]) to_select_plane = true;
-		if (pad_state.button[B_BUTTON]) to_select_plane = true;
-	}
-	else {
+	if (to_select_plane) {
 		//DEG2RAD
 		plane_to_select->local_matrix.rotateLocal(dt * 0.5, Vector3(0, 1, 0));
 		plane_to_select->update(dt);
+	}
+	/*keystate = game->keystate;
+	if (game->pad) pad_state = getJoystickState(game->pad);
 
-		
-		/*if (pad_state.button[RIGHT_BUTTON]) changePlane( selected_plane+1 );
-		if (pad_state.button[LEFT_BUTTON]) changePlane( selected_plane-1 );*/
-		if (pad_state.button[RIGHT_BUTTON]) changePlane(0);
-		if (pad_state.button[LEFT_BUTTON]) changePlane(1);
-		if (pad_state.button[UP_BUTTON]) changePlane(2);
-		if (pad_state.button[DOWN_BUTTON]) changePlane(3);
+	if (!to_select_plane) {
+	if (keystate[SDL_SCANCODE_SPACE]) to_select_plane = true;
+	if (pad_state.button[B_BUTTON]) to_select_plane = true;
+	}
+	else {
+	//DEG2RAD
+	plane_to_select->local_matrix.rotateLocal(dt * 0.5, Vector3(0, 1, 0));
+	plane_to_select->update(dt);
 
-		if (pad_state.button[A_BUTTON])	return true;
+
+	/*if (pad_state.button[RIGHT_BUTTON]) changePlane( selected_plane+1 );
+	if (pad_state.button[LEFT_BUTTON]) changePlane( selected_plane-1 );*/
+	/*if (pad_state.button[RIGHT_BUTTON]) changePlane(0);
+	if (pad_state.button[LEFT_BUTTON]) changePlane(1);
+	if (pad_state.button[UP_BUTTON]) changePlane(2);
+	if (pad_state.button[DOWN_BUTTON]) changePlane(3);
+
+	if (pad_state.button[A_BUTTON])	return true;
 	}
 
-	return false;
+	return false;*/
+}
+
+void StageMenu::onKeyPressed(SDL_KeyboardEvent event) {
+	switch (event.keysym.sym) {
+	case SDLK_b:
+		to_select_plane = true;
+		break;
+	case SDLK_RIGHT:
+		changePlane(selected_plane + 1);
+		break;
+	case SDLK_LEFT:
+		changePlane(selected_plane - 1);
+		break;
+	}
+}
+
+void StageMenu::onMouseButton(SDL_MouseButtonEvent event) {
+
+}
+
+void StageMenu::onJoyButtonUp(SDL_JoyButtonEvent event) {
+	switch (event.button) {
+	case RIGHT_BUTTON:
+		changePlane(selected_plane + 1);
+		break;
+	case LEFT_BUTTON:
+		changePlane(selected_plane - 1);
+		break;
+	case B_BUTTON:
+		to_select_plane = true;
+		break;
+	}
 }
 
 void StageMenu::changePlane(int next)
@@ -153,7 +202,8 @@ void StageMenu::changePlane(int next)
 
 	World* world = World::instance;
 
-	if (next >= world->entities.size() || next < 0)return;
+	if (next < 0) next = world->entities.size() - 1;
+	else if (next >= world->entities.size()) next = 0;
 
 	plane_to_select = world->entities[next];
 	selected_plane = next;
@@ -187,10 +237,10 @@ void StageLoading::render()
 	loading->unbind();
 }
 
-bool StageLoading::update(double dt)
+void StageLoading::update(double dt)
 {
 	game = Game::instance;
-	keystate = game->keystate;
+	/*keystate = game->keystate;
 	if (keystate[SDL_SCANCODE_SPACE]) return true;
 
 	if (game->pad) {
@@ -198,10 +248,21 @@ bool StageLoading::update(double dt)
 		if (pad_state.button[B_BUTTON] || pad_state.button[START_BUTTON]) return true;
 	}
 
-	return false;
+	return false;*/
 
 }
 
+void StageLoading::onKeyPressed(SDL_KeyboardEvent event) {
+
+}
+
+void StageLoading::onMouseButton(SDL_MouseButtonEvent event) {
+
+}
+
+void StageLoading::onJoyButtonUp(SDL_JoyButtonEvent event) {
+	
+}
 
 //---------------------------------------------------------------------------------------------------------
 StagePlay::~StagePlay() {
@@ -290,7 +351,7 @@ void StagePlay::render()
 	glDisable(GL_DEPTH_TEST);
 }
 
-bool StagePlay::update(double dt)
+void StagePlay::update(double dt)
 {
 	game = Game::instance;
 	world->root->update(dt);
@@ -312,7 +373,153 @@ bool StagePlay::update(double dt)
 	}*/
 
 
-	keystate = game->keystate;
+	/*keystate = game->keystate;
 	if (keystate[SDL_SCANCODE_K]) return true;
-	return false;
+	return false;*/
+}
+
+void StagePlay::onKeyPressed(SDL_KeyboardEvent event) {
+	switch (event.keysym.sym)
+	{
+	case SDLK_TAB:
+		if (game->time_scale == 1.0) {
+			game->time_scale = 0.01;
+			game->free_camera->lookAt(game->current_camera->eye, game->current_camera->center, game->current_camera->up);
+			game->current_camera = game->free_camera;
+			game->ctrlPlayer->active = false;
+		}
+		else {
+			game->time_scale = 1.0;
+			game->current_camera = game->ctrlPlayer->camera;
+			game->ctrlPlayer->active = true;
+		}
+		break;
+	case SDLK_1:
+		game->ctrlPlayer->target = game->test3;
+		break;
+	case SDLK_2:
+		game->ctrlPlayer->target = game->player;
+		break;
+	}
+}
+
+void StagePlay::onMouseButton(SDL_MouseButtonEvent event) {
+
+}
+
+void StagePlay::onJoyButtonUp(SDL_JoyButtonEvent event) {
+	switch (event.button) {
+	case 0:
+		std::cout << "JoyEvent -> 0" << std::endl;
+		break;
+	case 1:
+		std::cout << "JoyEvent -> 1" << std::endl;
+		break;
+	case 2:
+		std::cout << "JoyEvent -> 2" << std::endl;
+		break;
+	case 3:
+		std::cout << "JoyEvent -> 3" << std::endl;
+		break;
+	case 4:
+		std::cout << "JoyEvent -> 4" << std::endl;
+		break;
+	case 5:
+		std::cout << "JoyEvent -> 5" << std::endl;
+		break;
+	case 6:
+		std::cout << "JoyEvent -> 6" << std::endl;
+		break;
+	case 7:
+		std::cout << "JoyEvent -> 7" << std::endl;
+		break;
+	case 8:
+		std::cout << "JoyEvent -> 8" << std::endl;
+		break;
+	case 9:
+		std::cout << "JoyEvent -> 9" << std::endl;
+		break;
+	case 10:
+		std::cout << "JoyEvent -> 10" << std::endl;
+		break;
+	case 11:
+		std::cout << "JoyEvent -> 11" << std::endl;
+		break;
+	case 12:
+		std::cout << "JoyEvent -> 12" << std::endl;
+		break;
+	case 13:
+		std::cout << "JoyEvent -> 13" << std::endl;
+		break;
+	default:
+		std::cout << "JoyEvent -> Otro" << std::endl;
+		break;
+	}
+}
+
+//---------------------------------------------------------------------------------------------------------
+void StageDelegator::onKeyPressed(SDL_KeyboardEvent event) {
+	if (type_stage == "Intro") {
+		toMenu();
+		stage->init();
+	}
+	else if (type_stage == "Menu") {
+		StageMenu * sm = (StageMenu*)stage;
+		if (event.keysym.sym == SDLK_a && sm->to_select_plane) {
+			toLoading();
+			stage->init();
+		}
+		else {
+			stage->onKeyPressed(event);
+		}
+	}
+	else if (type_stage == "Loading" && (event.keysym.sym == SDLK_SPACE || event.keysym.sym == SDLK_RETURN)) {
+		toPlay();
+		stage->init();
+	}
+	else if (type_stage == "Play") {
+		stage->onKeyPressed(event);
+	}
+}
+
+void StageDelegator::onMouseButton(SDL_MouseButtonEvent event) {
+	if (type_stage == "Intro") {
+		toMenu();
+		stage->init();
+	}
+	else if (type_stage == "Menu") {
+		//toLoading();
+		//stage->init();
+	}
+	else if (type_stage == "Loading") {
+		//toPlay();
+		//stage->init();
+	}
+	else if (type_stage == "Play") {
+		stage->onMouseButton(event);
+	}
+}
+
+void StageDelegator::onJoyButtonUp(SDL_JoyButtonEvent event) {
+	if (type_stage == "Intro") {
+		toMenu();
+		stage->init();
+	}
+	else if (type_stage == "Menu") {
+		StageMenu * sm = (StageMenu*)stage;
+		if (event.button == A_BUTTON && sm->to_select_plane) {
+			toLoading();
+			stage->init();
+		}
+		else {
+			stage->onJoyButtonUp(event);
+		}
+	}
+	else if (type_stage == "Loading" && event.button == B_BUTTON) {
+		toPlay();
+		stage->init();
+	}
+	else if (type_stage == "Play") {
+		stage->onJoyButtonUp(event);
+	}
 }

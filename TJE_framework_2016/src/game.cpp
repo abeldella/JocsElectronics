@@ -14,9 +14,7 @@ RenderToTexture* rt = NULL;
 Game* Game::instance = NULL;
 
 std::vector< Vector3 > debug_lines;
-
-StageDelegator* current_stage = new StageDelegator();
-
+StageDelegator * current_stage;
 
 Game::Game(SDL_Window* window)
 {
@@ -35,7 +33,7 @@ Game::Game(SDL_Window* window)
 	world = NULL;
 	bulletMng = NULL;
 	pad = NULL;
-
+	current_stage = NULL;
 }
 
 //Here we have already GL working, so we can create meshes and textures
@@ -75,51 +73,8 @@ void Game::init(void)
 	fog_shader->enable();
 	fog_shader->setVector3("u_fog_color", fog_color);*/
 
-	//Avion para testear delete
-/*	player = (Fighter*)world->createEntity(Vector3(0,100,-200));
-	player->dynamic_entity = true;
-	player->onDemand();
-	world->root->addChildren(player);*/
-
-/*	player_camera = new Camera();
-	player_camera->setPerspective(70, window_width / (float)window_height, 0.1, 10000);
-	player_camera->lookAt(player->getGlobalMatrix() * Vector3(0, 2, -5), player->getGlobalMatrix() *  Vector3(0, 0, 50), Vector3(0, 1, 0));
-*/
-
-
-/*	ctrlPlayer = new Controller();
-	ctrlPlayer->target = player;
-	ctrlPlayer->pad = pad;
-
-	ctrlPlayer->camera = player_camera;
-	current_camera = ctrlPlayer->getCamera();
-	*/
-/*
-	AntiAircraft* torreta = new AntiAircraft();
-	torreta->setup("data/meshes/torreta/sci_fi_turret.obj", "data/meshes/torreta/sci_fi_turret.tga");
-	torreta->dynamic_entity = false; //La pongo como no dinamica para testear pero debe ser dinamica para poder destruirla
-	torreta->onDemand();
-	torreta->name = "sci_fi_turret";
-	torreta->local_matrix.setTranslation(-200, -10, -100);
-	world->root->addChildren(torreta);
-
-	ControllerIA* ctrlTorreta = new ControllerIA();
-	ctrlTorreta->target = torreta;
-*/
-
-/*
-	ControllerIA* ctrlBoss = new ControllerIA();
-	world->boss->setTimetoShoot(1.0);
-	ctrlBoss->target = world->boss;
-
-//	controllers.push_back(ctrlTorreta);
-	ctrlBoss->dynamic_controller = true;
-	controllers.push_back(ctrlBoss);
-*/	
-
-
-
-	//Probando los Stages
+	//Stages
+	current_stage = new StageDelegator();
 	current_stage->init();
 
 	/*	Codigo para composición de meshes, por ejemplo avion con misil.
@@ -236,7 +191,7 @@ void Game::update(double seconds_elapsed)
 {
 
 			//STAGES
-	if (current_stage->update(seconds_elapsed* time_scale) )
+	/*if (current_stage->update(seconds_elapsed* time_scale) )
 	{
 		std::cout << "Cambio de stage" << std::endl;
 		if (current_stage->type_stage == "Intro") current_stage->toMenu();
@@ -245,7 +200,8 @@ void Game::update(double seconds_elapsed)
 		else if (current_stage->type_stage == "Play") current_stage->toMenu();
 
 		current_stage->init();
-	}
+	}*/
+	current_stage->update(seconds_elapsed* time_scale);
 
 
 	double speed = seconds_elapsed * 100; //the speed is defined by the seconds_elapsed so it goes constant
@@ -307,32 +263,20 @@ void Game::renderDebug(Camera* camera)
 //Keyboard event handler (sync input)
 void Game::onKeyPressed( SDL_KeyboardEvent event )
 {
-	switch(event.keysym.sym)
-	{
-		case SDLK_ESCAPE: exit(0); //ESC key, kill the app
-		case SDLK_TAB:
-			if (time_scale == 1.0) {
-				time_scale = 0.01;
-				free_camera->lookAt(current_camera->eye, current_camera->center, current_camera->up);
-				current_camera = free_camera;
-				ctrlPlayer->active = false;
-			}
-			else {
-				time_scale = 1.0;
-				current_camera = ctrlPlayer->camera;
-				ctrlPlayer->active = true;
-			}
-			break;
-		case SDLK_1:
-			ctrlPlayer->target = test3;
-			break;
-		case SDLK_2:
-			ctrlPlayer->target = player;
-			break;
+	if (event.keysym.sym == SDLK_ESCAPE) {
+		exit(0);
+	}
+	else {
+		current_stage->onKeyPressed(event);
 	}
 }
 
+//Joystick event handler (sync input)
+void Game::onJoyButtonUp(SDL_JoyButtonEvent event) {
+	current_stage->onJoyButtonUp(event);
+}
 
+//Mouse event handler (sync input)
 void Game::onMouseButton( SDL_MouseButtonEvent event )
 {
 	if (event.button == SDL_BUTTON_MIDDLE) //middle mouse

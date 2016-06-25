@@ -103,6 +103,8 @@ void mainLoop()
 					case SDL_KEYDOWN: //EXAMPLE OF sync keyboard input
 						game->onKeyPressed( sdlEvent.key );
 						break;
+					case SDL_JOYBUTTONDOWN:
+						game->onJoyButtonUp(sdlEvent.jbutton );
 					case SDL_WINDOWEVENT:
 						switch (sdlEvent.window.event) {
 							case SDL_WINDOWEVENT_RESIZED: //resize opengl context

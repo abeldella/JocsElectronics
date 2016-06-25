@@ -50,6 +50,7 @@ public:
 
 	void onKeyPressed( SDL_KeyboardEvent event );
 	void onMouseButton( SDL_MouseButtonEvent event );
+	void onJoyButtonUp( SDL_JoyButtonEvent event );
     void onResize( SDL_Event e );
     
 	void setWindowSize(int width, int height);

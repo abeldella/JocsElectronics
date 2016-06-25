@@ -12,7 +12,12 @@ public:
 
 	virtual void init() = 0;
 	virtual void render() = 0;
-	virtual bool update(double dt) = 0;
+	virtual void update(double dt) = 0;
+
+	virtual void onKeyPressed(SDL_KeyboardEvent event) = 0;
+	virtual void onMouseButton(SDL_MouseButtonEvent event) = 0;
+	virtual void onJoyButtonUp(SDL_JoyButtonEvent event) = 0;
+
 	virtual ~Stage() {}
 };
 
@@ -21,7 +26,12 @@ public:
 
 	void init();
 	void render();
-	bool update(double dt);
+	void update(double dt);
+
+	void onKeyPressed(SDL_KeyboardEvent event);
+	void onMouseButton(SDL_MouseButtonEvent event);
+	void onJoyButtonUp(SDL_JoyButtonEvent event);
+
 	~StageIntro() { cout << "intro: llamada al destructor." << endl; }
 };
 
@@ -35,7 +45,12 @@ public:
 
 	void init();
 	void render();
-	bool update(double dt);
+	void update(double dt);
+
+	void onKeyPressed(SDL_KeyboardEvent event);
+	void onMouseButton(SDL_MouseButtonEvent event);
+	void onJoyButtonUp(SDL_JoyButtonEvent event);
+
 	void changePlane(int next);
 	~StageMenu() { cout << "menu: llamada al destructor." << endl; }
 };
@@ -44,7 +59,12 @@ class StageLoading : public Stage {
 public:
 	void init();
 	void render();
-	bool update(double dt);
+	void update(double dt);
+
+	void onKeyPressed(SDL_KeyboardEvent event);
+	void onMouseButton(SDL_MouseButtonEvent event);
+	void onJoyButtonUp(SDL_JoyButtonEvent event);
+
 	~StageLoading() { cout << "Loading: llamada al destructor." << endl; }
 };
 
@@ -54,7 +74,12 @@ public:
 
 	void init();
 	void render();
-	bool update(double dt);
+	void update(double dt);
+
+	void onKeyPressed(SDL_KeyboardEvent event);
+	void onMouseButton(SDL_MouseButtonEvent event);
+	void onJoyButtonUp(SDL_JoyButtonEvent event);
+
 	~StagePlay();
 };
 
@@ -72,7 +97,11 @@ public:
 	std::string type_stage = "Intro";
 	void init() { stage->init(); }
 	void render() { stage->render(); }
-	bool update(double dt) { return stage->update(dt); }
+	void update(double dt) { stage->update(dt); }
+
+	void onKeyPressed(SDL_KeyboardEvent event);
+	void onMouseButton(SDL_MouseButtonEvent event);
+	void onJoyButtonUp(SDL_JoyButtonEvent event);
 
 	// atributos normales
 	void toIntro() { delete stage; stage = new StageIntro(); type_stage = "Intro"; }
