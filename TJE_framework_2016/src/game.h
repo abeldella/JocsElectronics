@@ -12,6 +12,9 @@
 #include "controller.h"
 #include "manager.h"
 
+#include "bass.h"
+
+class StageDelegator;
 class Game
 {
 public:
@@ -60,10 +63,11 @@ public:
 	CollisionManager* collisionMng;
 
 	void renderDebug(Camera* camera);
-	void renderGUI();
-	Fighter* test3;
 
-	std::vector< Controller* > controllers;
+	StageDelegator* current_stage;
+
+	HSAMPLE hSample;
+	HCHANNEL hSampleChannel;
 };
 
 

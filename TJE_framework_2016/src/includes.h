@@ -33,7 +33,7 @@
 //GLUT
 #ifdef WIN32
     #include "GL/GLU.h"
-	//#include <GL/glut.h>
+	#include <GL/glut.h>
 #endif
 
 #ifdef __APPLE__

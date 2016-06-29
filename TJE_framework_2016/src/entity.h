@@ -6,6 +6,7 @@
 #include "utils.h"
 
 #define MAX_TTS 0.1
+#define MAX_DAMAGE 10
 
 class Camera;
 class Mesh;
@@ -73,19 +74,15 @@ public:
 
 	EntityCollider();
 	virtual void onDemand();
-	virtual void onBulletCollision();
+	virtual bool onBulletCollision();
+	virtual bool onCollision();
 
-	virtual void onCollision();
-	/*virtual bool onBulletCollision();*/
-	//OnDemand podemos llamar al createCollisionModel from Mesh
 };
 
 
 class Fighter : public EntityCollider
 {
 public:
-	float speed;
-	float speedc;
 	Vector3 velocity;
 	Vector3 camera_info;
 
@@ -96,9 +93,15 @@ public:
 	float tts; //time between shoot
 	float ttsc; //time between shoot custom
 	float start;
+
+	int life;
+
+	float speed;
+	float speedc;
 	bool accelerator;
 
 	Fighter();
+	virtual ~Fighter();
 
 	void update(float dt);
 	virtual void shoot();
@@ -108,7 +111,11 @@ public:
 	void setTimetoShoot(float time);
 	void setSpeed(float velocity);
 
+	virtual bool onBulletCollision();
+	virtual bool onCollision();
+
 	Vector3 getCameraEye();
+	static std::vector<Fighter*> s_fighters;
 };
 
 class AntiAircraft : public Fighter

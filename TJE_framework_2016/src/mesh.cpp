@@ -335,7 +335,7 @@ bool Mesh::loadASE(const char* filename) {
 		exit(0);
 	}
 
-	//Tratamiento del archivo ASE para obtener los valores pertinentes
+	//Tratamiento del archivo ASE para obtener los valores s_map
 	t.seek("*MESH_NUMVERTEX");
 	int num_vertex = t.getint(); //Numero de vertices de la mesh
 	std::cout << "num vertex: " << num_vertex << std::endl;

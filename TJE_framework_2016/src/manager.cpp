@@ -20,9 +20,9 @@ CollisionManager::CollisionManager()
 void CollisionManager::update(float dt)
 {
 	if (bulletToStatic()) //std::cout << "BulletToStatic Colisiona!!!" << std::endl;
-	if (bulletToDynamic()) std::cout << "BulletToDynamic Colisiona!!!" << std::endl;
+	if (bulletToDynamic()) std::cout << "BulletToDynamic Colisiona!!! Entity destroyed!" << std::endl;
 
-	if (dynamicToStatic())// std::cout << "DynamicToStatic Colisiona!!!" << std::endl;
+	if (dynamicToStatic()) std::cout << "DynamicToStatic Colisiona!!!" << std::endl;
 	if (dynamicTodynamic()) std::cout << "DynamicToDynamic Colisiona!!!" << std::endl;
 }
 
@@ -86,9 +86,10 @@ bool CollisionManager::bulletToDynamic()
 
 			if (dEntity->mesh->collision_model->rayCollision(last_pos.v, director.v, true) == false) continue;
 
+			if (!dEntity->onBulletCollision()) return false;
+			
 			dynamic_entities.erase(dynamic_entities.begin() + i);
-			dEntity->onBulletCollision();
-			return true;
+			return true; //solo devolvemos true en caso de destruir la entidad
 		}
 	}
 
@@ -108,16 +109,33 @@ bool CollisionManager::dynamicToStatic()
 			bool test = dEntity->mesh->collision_model->collision(sEntity->mesh->collision_model, -1, 0, sEntity->getGlobalMatrix().m);
 			
 			if (test) {
-
 				//Desplazamiento en caso de choque PRUEBA
-				Game* game = Game::instance;
 				Vector3 front = dEntity->getGlobalMatrix().rotateVector(Vector3(0, 1, 0));
-				//No usar la camara porque se transportan a nosotros 
-				//Camera* camera = game->current_camera;
-
 				Vector3 position = dEntity->global_matrix.getTranslation();
-				dEntity->local_matrix.setTranslation(position.x - 5, position.y - 5, position.z - 5);
-				dEntity->local_matrix.rotateLocal(0.60, front);
+	
+				int x, y, z, d = 5;
+				float angle = 0.6;
+				if (position.x < 0) {
+					x = d;
+					angle = -angle;
+				}
+				else x = -d;
+
+				if (position.y < 10) y = d;
+				else if (position.y > 380) y = -d;
+				else y = 0;
+
+				if (position.z < 0) {
+					z = d;
+					angle = -angle;
+				}
+				else z = -d;
+
+				dEntity->local_matrix.setTranslation(position.x + x, position.y + y, position.z + z);
+				dEntity->local_matrix.rotateLocal(angle, front);
+
+				if (!dEntity->onCollision()) return false;
+				dynamic_entities.erase(dynamic_entities.begin() + i);
 				return true;
 			}
 		}
@@ -140,6 +158,23 @@ bool CollisionManager::dynamicTodynamic()
 			bool test = dEntity1->mesh->collision_model->collision(dEntity2->mesh->collision_model, -1, 0, dEntity2->getGlobalMatrix().m);
 
 			if (test) {
+				Vector3 front1 = dEntity1->getGlobalMatrix().rotateVector(Vector3(0, 1, 0));
+				Vector3 front2 = dEntity2->getGlobalMatrix().rotateVector(Vector3(0, 1, 0));
+				Vector3 position1 = dEntity1->global_matrix.getTranslation();
+				Vector3 position2 = dEntity2->global_matrix.getTranslation();
+
+				dEntity1->local_matrix.setTranslation(position1.x - 5, position1.y - 5, position1.z - 5);
+				dEntity1->local_matrix.rotateLocal(0.60, front1);
+				dEntity2->local_matrix.setTranslation(position2.x - 5, position2.y - 5, position2.z - 5);
+				dEntity2->local_matrix.rotateLocal(0.60, front2);
+
+				bool return1, return2;
+				return1 = return2 = true;
+				if (!dEntity1->onCollision()) return1 = false;		
+				if (!dEntity2->onCollision()) return2 = false;
+				
+				if(return1)dynamic_entities.erase(dynamic_entities.begin() + i);
+				if(return2)dynamic_entities.erase(dynamic_entities.begin() + j);
 				return true;
 			}
 		}

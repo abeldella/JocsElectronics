@@ -8,13 +8,13 @@
 #include "stage.h"
 #include <cmath>
 
-//some globals
-//float angle = 0;
+#define AUDIO_DEVICE 1
+
 RenderToTexture* rt = NULL;
 Game* Game::instance = NULL;
 
 std::vector< Vector3 > debug_lines;
-StageDelegator * current_stage;
+
 
 Game::Game(SDL_Window* window)
 {
@@ -33,7 +33,13 @@ Game::Game(SDL_Window* window)
 	world = NULL;
 	bulletMng = NULL;
 	pad = NULL;
+
 	current_stage = NULL;
+
+	//El handler para un sample
+	hSample = 0;
+	//El handler para un canal
+	hSampleChannel = 0;
 }
 
 //Here we have already GL working, so we can create meshes and textures
@@ -46,6 +52,39 @@ void Game::init(void)
 	world = World::getInstance();
 	world->root = new Entity();
 
+	/*
+	//sound inicialization
+	BASS_Init(AUDIO_DEVICE, 44100, 0, 0, NULL);
+	//BASS_SetVolume(0.1);
+	//BASS_SetConfig(BASS_CONFIG_GVOL_SAMPLE, 1.0);
+
+	//const char* filename = "sounds/Pa_Panamericano.wav"; 
+	const char* filename = "sounds/StarWarsIntro.wav";
+	//Cargamos un sample (memoria, filename, offset, length, max, flags)
+	hSample = BASS_SampleLoad(false, filename, 0, 0, 3, 0); //use BASS_SAMPLE_LOOP in the last param to have a looped sound
+
+	if (hSample == 0) {
+		int err = BASS_ErrorGetCode();
+		std::cerr << "Error [" << err << "] while loading sample " << filename << std::endl;
+	}
+	//bass sample info!!!!!
+
+	if (hSampleChannel == 0) {
+		//Creamos un canal para el sample
+		hSampleChannel = BASS_SampleGetChannel(hSample, false);
+	}
+	if (hSampleChannel == 0) {
+		int err = BASS_ErrorGetCode();
+		if(err != BASS_ERROR_NOCHAN)
+			std::cerr << "Error [" << err << "] no channel id" << std::endl;
+		return;
+	}
+
+	//Lanzamos un sample
+	BOOL result = BASS_ChannelPlay(hSampleChannel, true);
+	if(result == FALSE)
+		std::cerr << "Error [" << BASS_ErrorGetCode() << "] while playing sample" << std::endl;
+	*/
 
 	pad = openJoystick(0);
     //SDL_SetWindowSize(window, 50,50);
@@ -67,13 +106,14 @@ void Game::init(void)
 	current_camera = free_camera;
 
 	world->factory("data/worlds/world_test.txt");
+	//world->createHorde("data/worlds/world_hordes.txt");
 
 	//Cargamos Meshes
 	/*Shader* fog_shader = Shader::load("data/shaders/fog.vs", "data/.-------");
 	fog_shader->enable();
 	fog_shader->setVector3("u_fog_color", fog_color);*/
 
-	//Stages
+	//Probando los Stages
 	current_stage = new StageDelegator();
 	current_stage->init();
 
@@ -163,29 +203,6 @@ void Game::render(void)
 	SDL_GL_SwapWindow(this->window);
 }
 
-void Game::renderGUI()
-{
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
-
-	Camera cam2D;
-	//0,0 arriba a la izquierda
-	cam2D.setOrthographic(0, window_width, window_height, 0, -1, 1);
-	cam2D.set();
-
-	Mesh quad;
-	quad.createQuad(window_width*0.5, window_height*0.5, 50, 50);
-
-	Texture* crosshair = Texture::get("data/textures/HUD/crosshair2.tga");
-
-	//ACtivar la transparencia
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	crosshair->bind();
-	quad.render(GL_TRIANGLES);
-	crosshair->unbind();
-	glDisable(GL_BLEND);
-}
 
 void Game::update(double seconds_elapsed)
 {
@@ -201,6 +218,7 @@ void Game::update(double seconds_elapsed)
 
 		current_stage->init();
 	}*/
+
 	current_stage->update(seconds_elapsed* time_scale);
 
 
@@ -250,6 +268,7 @@ void Game::renderDebug(Camera* camera)
 	if (mng->pointsOfCollision.vertices.size() > 1) {
 		Mesh mesh;
 		mesh.vertices = mng->pointsOfCollision.vertices;
+		mesh.vertices.push_back(Vector3(0, 0, 0));
 		glColor3f(0, 1, 0);
 		mesh.render(GL_POINTS);
 		//mng->pointsOfCollision.vertices.resize(0);
@@ -274,6 +293,7 @@ void Game::onKeyPressed( SDL_KeyboardEvent event )
 //Joystick event handler (sync input)
 void Game::onJoyButtonUp(SDL_JoyButtonEvent event) {
 	current_stage->onJoyButtonUp(event);
+	
 }
 
 //Mouse event handler (sync input)

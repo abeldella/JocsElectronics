@@ -22,18 +22,18 @@ World::World()
 	boss = NULL;
 
 	current_fighter = 0;
+	hordes = 0;
+	enemies = 0;
 }
 
 
 Entity* World::factory(const char* filename)
 {
-
 	TextParser t;
 	std::string docTexture;
 
-	//Cargamos un archivo ASE
 	if (!t.create(filename)) {
-		std::cout << "File: world.cpp - TextParser::create() fail" << std::endl;
+		std::cout << "File: world.cpp - TextParser::create() fail on factory" << std::endl;
 		exit(0);
 	}
 
@@ -54,7 +54,7 @@ Entity* World::factory(const char* filename)
 			docTexture = t.getword();
 			for (int i = 0; i < num_entities; i++) {
 				Vector3 pos = Vector3(t.getfloat(), t.getfloat(), t.getfloat());
-				createFighter(type.c_str(), docTexture.c_str(), pos);
+				createFighter(type.c_str(), docTexture.c_str(), pos, 0.0, 100);
 			}
 		}
 			break;
@@ -82,7 +82,7 @@ Entity* World::factory(const char* filename)
 		{
 		docTexture = t.getword();
 		Vector3 pos = Vector3(t.getfloat(), t.getfloat(), t.getfloat());
-		createBoss(type.c_str(), docTexture.c_str(), pos);
+		createBoss(type.c_str(), docTexture.c_str(), pos, 0.0, 100);
 		}
 			break;
 		
@@ -108,14 +108,14 @@ Entity* World::factory(const char* filename)
 void World::createSkybox()
 {
 	skybox = new EntityCollider();
-	skybox->setup("data/meshes/skybox/cubemap.OBJ", "data/textures/room2.tga");
+	skybox->setup("data/meshes/skybox/cubemap.OBJ", "data/textures/room.tga");
 	skybox->frustum_test = false;
 	skybox->onDemand();
 	skybox->local_matrix.setTranslation(0, 200, 0);
 
 }
 
-void World::createFighter(const char* name, const char* texture, Vector3 pos)
+void World::createFighter(const char* name, const char* texture, Vector3 pos, float velocity, int life)
 {
 	std::string n_filename, t_filename;
 	n_filename = std::string("data/meshes/") + name;
@@ -126,10 +126,11 @@ void World::createFighter(const char* name, const char* texture, Vector3 pos)
 	fighter->setup(n_filename.c_str(), t_filename.c_str());
 	fighter->local_matrix.setTranslation(pos.x, pos.y, pos.z);
 
-	fighter->name = "fighter";
+	fighter->name = t_filename + std::to_string(fighter->uid);
 	fighter->dynamic_entity = true;
 	fighter->setTimetoShoot(0.7);
-	fighter->setSpeed(100.0);
+	fighter->setSpeed(velocity);
+	fighter->life = life;
 	fighter->onDemand();
 
 	ControllerIA* ctrlFighter = new ControllerIA();
@@ -138,6 +139,7 @@ void World::createFighter(const char* name, const char* texture, Vector3 pos)
 
 	root->addChildren(fighter);
 	controllers.push_back(ctrlFighter);
+	enemies++;
 }
 
 void World::docCreateEntity(const char* name, const char* texture, Vector3 pos, int angle, Vector3 rotation)
@@ -169,26 +171,18 @@ Entity* World::createSpitfire(Vector3 pos)
 
 void World::createTerrain()
 {
-
-//Creamos el suelo de la habitación
-	for (int i = 0; i < 1; i++) {
-		for (int j = 0; j < 1; j++) {
-			Mesh* plane = new Mesh();
-			//plane->createPlane(700);
-			plane->createPlane(600);
-			EntityMesh* floor = new EntityMesh();
-			floor->mesh = plane;
-			//floor->texture = Texture::get("data/TilesPlain0136_1_S.TGA");
-			floor->texture = Texture::get("data/textures/woodeuro.TGA");
-			floor->two_sided = true;
-			floor->local_matrix.setTranslation(i*floor->mesh->halfSize.x * 2, -10, j*floor->mesh->halfSize.z * 2);
-			root->addChildren(floor);
-		}
-	}
-
+	Mesh* plane = new Mesh();
+	plane->createPlane(FLOOR_SIZE);
+	floor = new EntityCollider();
+	floor->mesh = plane;
+	floor->texture = Texture::get("data/textures/woodeuro.TGA");
+	floor->two_sided = true;
+	floor->local_matrix.setTranslation(0, -10, 0);
+	floor->onDemand();
+	root->addChildren(floor);
 }
 
-void World::createBoss(const char* name, const char* texture, Vector3 pos)
+void World::createBoss(const char* name, const char* texture, Vector3 pos, float velocity, int life)
 {
 	std::string n_filename, t_filename;
 	n_filename = std::string("data/meshes/") + name;
@@ -199,9 +193,11 @@ void World::createBoss(const char* name, const char* texture, Vector3 pos)
 	boss->setup(n_filename.c_str(), t_filename.c_str());
 	boss->local_matrix.setTranslation(pos.x, pos.y, pos.z);
 	
+	boss->name = std::string("Boss_") + std::to_string(boss->uid);
 	boss->dynamic_entity = true;
 	boss->setTimetoShoot(1.0);
-	boss->setSpeed(130.0);
+	boss->setSpeed(velocity);
+	boss->life = life;
 	boss->onDemand();
 
 	ControllerIA* ctrlBoss = new ControllerIA();
@@ -210,8 +206,8 @@ void World::createBoss(const char* name, const char* texture, Vector3 pos)
 
 	this->boss = boss;
 	root->addChildren(boss);
-	controllers.push_back(ctrlBoss);
-	
+	controllers.push_back(ctrlBoss);	
+	enemies++;
 }
 
 void World::menuPlaneSelection(const char* name)
@@ -225,4 +221,61 @@ void World::menuPlaneSelection(const char* name)
 	fighter->name = name;
 
 	entities.push_back(fighter);
+}
+
+void World::createHorde(const char* filename)
+{
+	TextParser t;
+	std::string docName, docTexture;
+	float docSpeed;
+	int docLife;
+
+	hordes++;
+
+	if (!t.create(filename)) {
+		std::cout << "File: world.cpp - TextParser::create() fail on createHorde" << std::endl;
+		exit(0);
+	}
+	std::string current_horde = std::string("*NUM_HORDE_") + std::to_string(hordes);
+
+	t.seek(current_horde.c_str());
+
+	t.seek("*SCENE_NUMOBJECTS");
+	int total_doc_entities = t.getint();
+
+	for (int k = 0; k < total_doc_entities; k++) {
+
+		t.seek("*NUMOBJECT");
+		int num_entities = t.getint();
+		int id = t.getint();
+		docName = t.getword();
+		docTexture = t.getword();
+
+		docSpeed = t.getfloat();
+		docLife = t.getint();
+
+		switch (id){
+			case FIGHTER:
+			{
+				for (int i = 0; i < num_entities; i++) {
+					Vector3 pos = Vector3(t.getfloat(), t.getfloat(), t.getfloat());
+					createFighter(docName.c_str(), docTexture.c_str(), pos, docSpeed, docLife);
+				}
+
+			}break;
+
+			case BOSS:
+			{
+				for (int i = 0; i < num_entities; i++) {
+					Vector3 pos = Vector3(t.getfloat(), t.getfloat(), t.getfloat());
+					createBoss(docName.c_str(), docTexture.c_str(), pos, docSpeed, docLife);
+				}
+
+			}break;
+
+			default: std::cout << "Incorrect Id: " << id << std::endl;
+			break;
+		}
+
+	}
 }

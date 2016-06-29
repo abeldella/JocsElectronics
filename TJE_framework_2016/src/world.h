@@ -6,6 +6,9 @@
 #include "entity.h"
 #include "controller.h"
 
+#define MAX_HORDES 2
+#define FLOOR_SIZE 600 
+
 class World
 {
 private:
@@ -19,31 +22,32 @@ public:
 		return instance;
 	}
 
-	int current_fighter;
+	int current_fighter; //Fighter control on menu selection
+	int hordes;			// round or Id horde
+	int enemies;		//current horede
+
 	Entity* root;
 	EntityCollider* skybox;
-	std::vector< Entity* > entities;
-
-	std::vector< Controller* > controllers;
-
-	//Entidad boss para testear delete
+	EntityCollider* floor;
 	Fighter* boss;
+	std::vector< Entity* > entities;		//Fighters to be selected
+	std::vector< Controller* > controllers;	//Enemy controllers
 
 	//Metodos para cmabiar la textura de skybox ej. Cambia a noche.
 
 	//Metodo Factory o create entity
 	Entity* factory(const char* filename);
-
-	void createSkybox();
-	
 	Entity* createSpitfire(Vector3 pos);
-
+	
+	void createSkybox();
 	void createTerrain();
 
-	void createFighter(const char* name, const char* texture, Vector3 pos);
-	void createBoss(const char* name, const char* texture, Vector3 pos);
+	void createFighter(const char* name, const char* texture, Vector3 pos, float velocity, int life); //create enemy
+	void createBoss(const char* name, const char* texture, Vector3 pos, float velocity, int life);
 	void docCreateEntity(const char* name, const char* texture, Vector3 pos, int angle, Vector3 rotation);
 	void menuPlaneSelection(const char* name);
+
+	void createHorde(const char* filename);
 
 };
 

@@ -17,7 +17,7 @@ public:
 	virtual void onKeyPressed(SDL_KeyboardEvent event) = 0;
 	virtual void onMouseButton(SDL_MouseButtonEvent event) = 0;
 	virtual void onJoyButtonUp(SDL_JoyButtonEvent event) = 0;
-
+	
 	virtual ~Stage() {}
 };
 
@@ -46,12 +46,12 @@ public:
 	void init();
 	void render();
 	void update(double dt);
+	void changePlane(int next);
 
 	void onKeyPressed(SDL_KeyboardEvent event);
 	void onMouseButton(SDL_MouseButtonEvent event);
 	void onJoyButtonUp(SDL_JoyButtonEvent event);
 
-	void changePlane(int next);
 	~StageMenu() { cout << "menu: llamada al destructor." << endl; }
 };
 
@@ -76,11 +76,32 @@ public:
 	void render();
 	void update(double dt);
 
+	void renderGUI();
+	void stoppingGame();
+	void printString(float x, float y, float z, void* font, float r, float g, float b, char * string);
+
 	void onKeyPressed(SDL_KeyboardEvent event);
 	void onMouseButton(SDL_MouseButtonEvent event);
 	void onJoyButtonUp(SDL_JoyButtonEvent event);
 
 	~StagePlay();
+};
+
+class StageFinal : public Stage {
+public:
+	World* world;
+	bool win;
+
+	void init();
+	void render();
+	void update(double dt);
+
+	void onKeyPressed(SDL_KeyboardEvent event);
+	void onMouseButton(SDL_MouseButtonEvent event);
+	void onJoyButtonUp(SDL_JoyButtonEvent event);
+
+	StageFinal(bool result) { win = result; }
+	~StageFinal() { cout << "Final: llamada al destructor." << endl; }
 };
 
 class StageDelegator : public Stage {
@@ -108,6 +129,7 @@ public:
 	void toMenu() { delete stage; stage = new StageMenu(); type_stage = "Menu"; }
 	void toLoading() { delete stage; stage = new StageLoading(); type_stage = "Loading"; }
 	void toPlay() { delete stage; stage = new StagePlay(); type_stage = "Play"; }
+	void toFinal(bool result) { delete stage; stage = new StageFinal(result); type_stage = "Final"; }
 };
 
 #endif

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "entity.h"
 #include "shader.h"
 #include "camera.h"
@@ -22,7 +23,8 @@ Entity::Entity()
 Entity::~Entity() 
 {
 	std::cout << "Entity destroyed" << std::endl;
-	//To do 
+	World* world = World::getInstance();
+	world->enemies--;
 	//Al destruir la entidad eliminamos todos sus hijos
 	std::vector<Entity*>::iterator it;
 	for (it = children.begin(); it != children.end(); it++) {
@@ -213,20 +215,25 @@ void EntityCollider::onDemand()
 	else manager->setStatic(this);
 }
 
-void EntityCollider::onBulletCollision()
+bool EntityCollider::onBulletCollision()
 {
 	destroyEntity();
+	return true;
 }
 
-void EntityCollider::onCollision()
+bool EntityCollider::onCollision()
 {
-	
+	destroyEntity();
+	return true;
 }
 
 
 //---------------------------------------------------------------------------------------------------------
+std::vector<Fighter*> Fighter::s_fighters;
+
 Fighter::Fighter()
 {
+	life = 100;
 	speed = 0;	
 	speedc = 0;
 	tta = 5;
@@ -237,9 +244,17 @@ Fighter::Fighter()
 	accelerator = false;
 
 	dynamic_entity = true;
+	s_fighters.push_back(this);
 
 	camera_eye = Vector3(0, 2, -5);
 	camera_center = Vector3(0, 0, 10);
+}
+
+Fighter::~Fighter()
+{
+	auto it = std::find( s_fighters.begin(), s_fighters.end(), this );
+	if (it != s_fighters.end())
+		s_fighters.erase(it);
 }
 
 void Fighter::update(float dt)
@@ -269,7 +284,7 @@ void Fighter::update(float dt)
 	*/
 
 	Vector3 pos = local_matrix.getTranslation();
-	if (pos.y < 0) {
+	if (pos.y < -5) {
 		local_matrix.m[13] = 0;
 	}
 	//velocity = velocity - velocity * 0.006;
@@ -335,6 +350,28 @@ void Fighter::setSpeed(float velocity)
 	speed = velocity;
 	speedc = velocity;
 }
+
+bool Fighter::onBulletCollision()
+{
+	int damage = std::rand() % MAX_DAMAGE;
+	life -= damage;
+	//Fragment manager y sonido
+	if (life > 0) return false;
+	life = 0;
+	destroyEntity();
+	return true;
+}
+
+bool Fighter::onCollision()
+{
+	life -= life * 0.2;
+	//Fragment manager y sonido
+	if (life > 0) return false;
+	life = 0;
+	destroyEntity();
+	return true;
+}
+
 //---------------------------------------------------------------------------------------------------------
 AntiAircraft::AntiAircraft()
 {

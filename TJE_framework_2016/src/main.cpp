@@ -104,7 +104,8 @@ void mainLoop()
 						game->onKeyPressed( sdlEvent.key );
 						break;
 					case SDL_JOYBUTTONDOWN:
-						game->onJoyButtonUp(sdlEvent.jbutton );
+						game->onJoyButtonUp(sdlEvent.jbutton);
+						break;
 					case SDL_WINDOWEVENT:
 						switch (sdlEvent.window.event) {
 							case SDL_WINDOWEVENT_RESIZED: //resize opengl context

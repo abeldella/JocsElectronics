@@ -9,7 +9,6 @@ Controller::Controller()
 	pad = NULL;
 	camera = NULL;
 	keystate = NULL;
-	/*mouse_locked = false;*/
 	active = true;
 }
 Controller::~Controller()
@@ -22,8 +21,6 @@ void Controller::update(float dt)
 	Fighter* player = (Fighter*)target;
 	Game* game = Game::instance;
 	keystate = game->keystate;
-
-
 
 	if (active) {
 
@@ -82,7 +79,7 @@ void Controller::update(float dt)
 
 		//Change camera target
 		if (pad_state.button[Y_BUTTON]) {
-			setTarget(game->test3);
+			//setTarget(game->test3);
 		}
 		if (pad_state.button[X_BUTTON]) {
 			setTarget(game->player);
@@ -104,9 +101,6 @@ void Controller::update(float dt)
 	if(!player->accelerator)
 		camera = getCamera();
 	else {
-		for (int i = -5; i <= -25; i++) {
-			camera->lookAt(global_player_matrix * Vector3(0, 2, i), global_player_matrix *  Vector3(0, 0, 20), global_player_matrix.rotateVector(Vector3(0, 1, 0)));
-		}
 		camera->lookAt(global_player_matrix * Vector3(0, 2, -25), global_player_matrix *  Vector3(0, 0, 20), global_player_matrix.rotateVector(Vector3(0, 1, 0)));
 	}
 }
