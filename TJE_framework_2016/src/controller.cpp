@@ -69,6 +69,7 @@ void Controller::update(float dt)
 			player->shoot();
 			player->camera_info.z -= (0.01*cos(game->time * 25 * PI));
 			player->camera_info.z -= 0.1 * dt;
+
 		}
 		else if (pad_state.axis[TRIGGERS_RT] == -1) player->camera_info.z = 0;
 		

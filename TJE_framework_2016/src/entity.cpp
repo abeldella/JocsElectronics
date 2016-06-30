@@ -305,8 +305,13 @@ void Fighter::shoot()
 		pos = global_matrix * Vector3(-2.1, -0.55, 0.6);
 		//pos = pos + velocity;
 		bulletMng->createBullet(pos, vel, MAX_TTL, this);
-
 		tts = ttsc;
+
+		Game* game = Game::instance;
+		if (this == game->player){
+			SoundManager* sm = SoundManager::getInstance();
+			sm->startSound("triple-shot.wav", true, 0);
+		}
 	}
 
 }

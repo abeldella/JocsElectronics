@@ -8,8 +8,6 @@
 #include "stage.h"
 #include <cmath>
 
-#define AUDIO_DEVICE 1
-
 RenderToTexture* rt = NULL;
 Game* Game::instance = NULL;
 
@@ -32,14 +30,11 @@ Game::Game(SDL_Window* window)
 	mouse_locked = false;
 	world = NULL;
 	bulletMng = NULL;
+	collisionMng = NULL;
+	soundMng = NULL;
 	pad = NULL;
 
 	current_stage = NULL;
-
-	//El handler para un sample
-	hSample = 0;
-	//El handler para un canal
-	hSampleChannel = 0;
 }
 
 //Here we have already GL working, so we can create meshes and textures
@@ -51,40 +46,6 @@ void Game::init(void)
 	//Scene inicialization
 	world = World::getInstance();
 	world->root = new Entity();
-
-	/*
-	//sound inicialization
-	BASS_Init(AUDIO_DEVICE, 44100, 0, 0, NULL);
-	//BASS_SetVolume(0.1);
-	//BASS_SetConfig(BASS_CONFIG_GVOL_SAMPLE, 1.0);
-
-	//const char* filename = "sounds/Pa_Panamericano.wav"; 
-	const char* filename = "sounds/StarWarsIntro.wav";
-	//Cargamos un sample (memoria, filename, offset, length, max, flags)
-	hSample = BASS_SampleLoad(false, filename, 0, 0, 3, 0); //use BASS_SAMPLE_LOOP in the last param to have a looped sound
-
-	if (hSample == 0) {
-		int err = BASS_ErrorGetCode();
-		std::cerr << "Error [" << err << "] while loading sample " << filename << std::endl;
-	}
-	//bass sample info!!!!!
-
-	if (hSampleChannel == 0) {
-		//Creamos un canal para el sample
-		hSampleChannel = BASS_SampleGetChannel(hSample, false);
-	}
-	if (hSampleChannel == 0) {
-		int err = BASS_ErrorGetCode();
-		if(err != BASS_ERROR_NOCHAN)
-			std::cerr << "Error [" << err << "] no channel id" << std::endl;
-		return;
-	}
-
-	//Lanzamos un sample
-	BOOL result = BASS_ChannelPlay(hSampleChannel, true);
-	if(result == FALSE)
-		std::cerr << "Error [" << BASS_ErrorGetCode() << "] while playing sample" << std::endl;
-	*/
 
 	pad = openJoystick(0);
     //SDL_SetWindowSize(window, 50,50);
@@ -98,6 +59,7 @@ void Game::init(void)
 	MeshManager* meshMng = MeshManager::getInstance();
 	bulletMng = BulletMaganer::getInstance();
 	collisionMng = CollisionManager::getInstance();
+	soundMng = SoundManager::getInstance();
 
 	//create our camera
 	free_camera = new Camera();
@@ -105,8 +67,23 @@ void Game::init(void)
 	free_camera->setPerspective(70,window_width/(float)window_height,0.1,25000); //set the projection, we want to be perspective
 	current_camera = free_camera;
 
+
 	world->factory("data/worlds/world_test.txt");
-	//world->createHorde("data/worlds/world_hordes.txt");
+
+
+
+	//Sounds
+	//Streams
+	soundMng->loadStream("StarWarsIntro.wav");
+	soundMng->loadStream("air-force-radio.wav");
+	soundMng->loadStream("Shoot_To_Thrill.wav");
+	soundMng->loadStream("win.wav");
+	soundMng->loadStream("Aurora_Tom_Clancy.wav");
+	//samples
+	soundMng->loadSample("triple-shot.wav");
+	soundMng->loadSample("lose.wav");
+	soundMng->loadSample("Pa_Panamericano.wav");
+	//soundMng->loadSample("win.wav");
 
 	//Cargamos Meshes
 	/*Shader* fog_shader = Shader::load("data/shaders/fog.vs", "data/.-------");
@@ -268,8 +245,7 @@ void Game::renderDebug(Camera* camera)
 	if (mng->pointsOfCollision.vertices.size() > 1) {
 		Mesh mesh;
 		mesh.vertices = mng->pointsOfCollision.vertices;
-		mesh.vertices.push_back(Vector3(0, 0, 0));
-		glColor3f(0, 1, 0);
+		glColor3f(0, 0, 0);
 		mesh.render(GL_POINTS);
 		//mng->pointsOfCollision.vertices.resize(0);
 	}

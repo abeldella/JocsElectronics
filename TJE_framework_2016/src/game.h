@@ -11,7 +11,7 @@
 #include "world.h"
 #include "controller.h"
 #include "manager.h"
-
+#include "sound.h"
 #include "bass.h"
 
 class StageDelegator;
@@ -26,6 +26,7 @@ public:
 	int window_height;
 
     float time;
+	float start_play_time;
 	float time_scale; //game mov speed
 
 	//keyboard state
@@ -57,17 +58,15 @@ public:
     void onResize( SDL_Event e );
     
 	void setWindowSize(int width, int height);
+	void renderDebug(Camera* camera);
 
 	World* world;
 	BulletMaganer* bulletMng;
 	CollisionManager* collisionMng;
-
-	void renderDebug(Camera* camera);
+	SoundManager* soundMng;
 
 	StageDelegator* current_stage;
 
-	HSAMPLE hSample;
-	HCHANNEL hSampleChannel;
 };
 
 

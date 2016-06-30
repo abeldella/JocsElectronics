@@ -1,6 +1,7 @@
 #ifndef STAGE_H
 #define STAGE_H
 #include "game.h"
+#include "sound.h"
 #include <iostream>
 using namespace std;
 
@@ -9,6 +10,7 @@ public:
 	const Uint8* keystate;
 	JoystickState pad_state;
 	Game* game;
+	SoundManager* soundMng = SoundManager::getInstance();
 
 	virtual void init() = 0;
 	virtual void render() = 0;
@@ -101,7 +103,7 @@ public:
 	void onJoyButtonUp(SDL_JoyButtonEvent event);
 
 	StageFinal(bool result) { win = result; }
-	~StageFinal() { cout << "Final: llamada al destructor." << endl; }
+	~StageFinal();
 };
 
 class StageDelegator : public Stage {

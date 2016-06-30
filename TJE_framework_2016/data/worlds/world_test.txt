@@ -34,3 +34,4 @@ Harrier
 XA-20_Razorback
 YF-23_BlackWidow_II
 F-15_Active
+C-5_Galaxy
