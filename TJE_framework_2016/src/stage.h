@@ -34,7 +34,7 @@ public:
 	void onMouseButton(SDL_MouseButtonEvent event);
 	void onJoyButtonUp(SDL_JoyButtonEvent event);
 
-	~StageIntro() { cout << "intro: llamada al destructor." << endl; }
+	~StageIntro() { }
 };
 
 class StageMenu : public Stage {
@@ -54,7 +54,7 @@ public:
 	void onMouseButton(SDL_MouseButtonEvent event);
 	void onJoyButtonUp(SDL_JoyButtonEvent event);
 
-	~StageMenu() { cout << "menu: llamada al destructor." << endl; }
+	~StageMenu() { }
 };
 
 class StageLoading : public Stage {
@@ -67,7 +67,7 @@ public:
 	void onMouseButton(SDL_MouseButtonEvent event);
 	void onJoyButtonUp(SDL_JoyButtonEvent event);
 
-	~StageLoading() { cout << "Loading: llamada al destructor." << endl; }
+	~StageLoading() { }
 };
 
 class StagePlay : public Stage {

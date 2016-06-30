@@ -239,14 +239,14 @@ void StageLoading::onJoyButtonUp(SDL_JoyButtonEvent event)
 //---------------------------------------------------------------------------------------------------------
 StagePlay::~StagePlay() 
 {
-	cout << "play: llamada al destructor." << endl;
+	//cout << "play: llamada al destructor." << endl;
 	soundMng->stopStream("air-force-radio.wav");
 	soundMng->stopStream("Shoot_To_Thrill.wav");
 }
 
 void StagePlay::init()
 {
-	cout << "play: haciendo init()" << endl;
+	//cout << "play: haciendo init()" << endl;
 	game = Game::instance;
 	world = World::getInstance();
 
@@ -574,7 +574,7 @@ StageFinal::~StageFinal()
 	CollisionManager* mng = CollisionManager::getInstance();
 	game->start_play_time = 0;
 	mng->pointsOfCollision.vertices.clear();
-	cout << "Final: llamada al destructor." << endl; 
+	//cout << "Final: llamada al destructor." << endl; 
 }
 
 void StageFinal::init()

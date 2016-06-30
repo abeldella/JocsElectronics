@@ -22,7 +22,7 @@ Entity::Entity()
 
 Entity::~Entity() 
 {
-	std::cout << "Entity destroyed" << std::endl;
+	//std::cout << "Entity destroyed" << std::endl;
 	World* world = World::getInstance();
 	world->enemies--;
 	//Al destruir la entidad eliminamos todos sus hijos
@@ -120,7 +120,7 @@ EntityMesh::EntityMesh()
 
 EntityMesh::~EntityMesh()
 {
-	std::cout << "EntityMesh destroyed" << std::endl;
+	//std::cout << "EntityMesh destroyed" << std::endl;
 }
 
 void EntityMesh::render(Camera* camera) 

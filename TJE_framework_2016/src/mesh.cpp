@@ -324,7 +324,7 @@ bool Mesh::loadASE(const char* filename) {
 	bin_filename = filename + std::string(".bin");
 
 	if(loadBIN(bin_filename.c_str())){
-		std::cout << "Existe BIN" << std::endl;
+		//std::cout << "Existe BIN" << std::endl;
 		return true;
 	}
 
@@ -338,10 +338,10 @@ bool Mesh::loadASE(const char* filename) {
 	//Tratamiento del archivo ASE para obtener los valores s_map
 	t.seek("*MESH_NUMVERTEX");
 	int num_vertex = t.getint(); //Numero de vertices de la mesh
-	std::cout << "num vertex: " << num_vertex << std::endl;
+	//std::cout << "num vertex: " << num_vertex << std::endl;
 	t.seek("*MESH_NUMFACES");
 	int num_faces = t.getint(); //Numero de caras (triangulos) de la mesh
-	std::cout << "num faces: " << num_faces << std::endl;
+	//std::cout << "num faces: " << num_faces << std::endl;
 
 	//Almacenamos las coordenadas de cada uno de los vertices
 	unique_vertices.resize(num_vertex);
@@ -365,7 +365,7 @@ bool Mesh::loadASE(const char* filename) {
 	}
 	center = (max + min) * 0.5;
 	halfSize = max - center;
-	std::cout << "halfSize = " << halfSize.length() << std::endl;
+	//std::cout << "halfSize = " << halfSize.length() << std::endl;
 	
 	//Almacenamos los aristas existentes en la mesh entre los vertices
 	t.seek("*MESH_FACE_LIST");
@@ -387,7 +387,7 @@ bool Mesh::loadASE(const char* filename) {
 
 	t.seek("*MESH_NUMTVERTEX");
 	int numtvertex = t.getint(); //Numero de vertices de la textura
-	std::cout << "num TVERTEX: " << numtvertex << std::endl;
+	//std::cout << "num TVERTEX: " << numtvertex << std::endl;
 	
 	//Almacenamos las coordenadas en 2D de cada vertice en la textura
 	unique_uvs.resize(numtvertex);
@@ -435,7 +435,7 @@ bool Mesh::loadASE(const char* filename) {
 }
 
 bool Mesh::writeBIN(const char* filename) {
-	std::cout << "Creando BIN " << filename << std::endl;
+	//std::cout << "Creando BIN " << filename << std::endl;
 	sMeshbin header;
 	header.num_vertices = vertices.size();
 	header.num_normals = normals.size();
@@ -498,7 +498,7 @@ bool Mesh::loadOBJ(const char* filename)
 	bin_filename = filename + std::string(".bin");
 
 	if (loadBIN(bin_filename.c_str())) {
-		std::cout << "Existe BIN" << std::endl;
+		//std::cout << "Existe BIN" << std::endl;
 		return true;
 	}
 
@@ -622,7 +622,7 @@ bool Mesh::loadOBJ(const char* filename)
 
 	center = (max + min) * 0.5;
 	halfSize = max - center;
-	std::cout << "halfSize = " << halfSize.length() << std::endl;
+	//std::cout << "halfSize = " << halfSize.length() << std::endl;
 
 	writeBIN(bin_filename.c_str());
 	return true;
